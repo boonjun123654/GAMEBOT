@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: tt-bomb-bot
+    env: python
+    buildCommand: ""
+    startCommand: "python bot.py"
+    envVars:
+      - key: BOT_TOKEN
+        value: 你的-8034990761:AAEOAsRNSQYc1VcFqRxdEsd4oUfqSjMMXFE-填写在这里
