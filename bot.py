@@ -7,7 +7,7 @@ from telegram.ext import (
 )
 import os
 
-BOT_TOKEN = os.getenv("8034990761:AAEOAsRNSQYc1VcFqRxdEsd4oUfqSjMMXFE")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 games = {}
 
 async def welcome_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
