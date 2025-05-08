@@ -7,7 +7,7 @@ group_state = {}  # 记录每个群的炸弹数量和炸弹数字列表
 group_selected = {}
 
 START_IMAGE = "https://i.imgur.com/WeYjoPN.jpeg"
-BOMB_IMAGE = "https://i.imgur.com/rZBrFTd.jpeg"
+BOMB_IMAGE = "https://i.imgur.com/hizFagI.jpeg"
 
 # 选择炸弹数量界面
 async def start_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
