@@ -91,7 +91,7 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    await start_game(query, context)
+    await start_game(update, context)
 
 if __name__ == "__main__":
     import logging
