@@ -157,9 +157,8 @@ async def handle_wenchi_guess(update: Update, context: ContextTypes.DEFAULT_TYPE
     if chat_id not in group_data:
         group_data[chat_id] = {"selected": set()}
     if "selected" not in group_data[chat_id]:
-        group_data["selected"] = set()
+        group_data[chat_id]["selected"] = set()
     if guess in group_data[chat_id]["selected"]:
-        await query.answer("这个食物已经被选过了~", show_alert=True)
         await query.answer("这个食物已经被选过了~", show_alert=True)
         return
     group_data[chat_id]["selected"].add(guess)
