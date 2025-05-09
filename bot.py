@@ -59,6 +59,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
     if mode == "wenchi":
         bad_food = random.randint(1, 10)
         group_data[chat_id] = bad_food
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
         await context.bot.send_message(
             chat_id=chat_id,
             text="😋 WenChi 今天吃什么？请选择：",
@@ -66,6 +67,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
     elif mode == "sweeper":
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="💥 数字扫雷游戏开始！范围：1–100")
         await context.bot.send_message(chat_id=chat_id, text="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
     elif mode == "bomb":
         keyboard = [[InlineKeyboardButton(f"{i} 💣", callback_data=f"bombs:{i}") for i in range(1, 4)]]
@@ -81,9 +83,18 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=chat_id, text="请选择本局💣的数量‼越多越刺激‼", reply_markup=InlineKeyboardMarkup(keyboard))
     elif mode == "sweeper":
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="💥 数字扫雷游戏开始！范围：1–100")
         await context.bot.send_message(chat_id=chat_id, text="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
     elif mode == "wenchi":
-        group_data[chat_id] = random.randint(1, 10)
+        bad = random.randint(1, 10)
+
+    if chat_id not in group_data or not isinstance(group_data[chat_id], dict):
+        group_data[chat_id] = {"bad": bad, "selected": set()}
+    else:
+        group_data[chat_id]["bad"] = bad
+        group_data[chat_id]["selected"] = set()
+
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
         await context.bot.send_message(
             chat_id=chat_id,
             text="😋 WenChi 今天吃什么？请选择：",
@@ -120,8 +131,7 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.answer("这个数字已经被选过了！", show_alert=True)
         return
 
-    # 原重复检测已移除
-        return
+    
     data["selected"].add(number)
     if number in data["bombs"]:
         await context.bot.send_photo(
@@ -142,14 +152,17 @@ async def handle_wenchi_guess(update: Update, context: ContextTypes.DEFAULT_TYPE
     await query.answer()
     chat_id = query.message.chat.id
     guess = int(query.data.split(":")[1])
-    bad = group_data.get(chat_id)
+    bad = group_data.get(chat_id, {}).get("bad")
     
-    if "selected" not in group_data:
+    if chat_id not in group_data:
+        group_data[chat_id] = {"selected": set()}
+    if "selected" not in group_data[chat_id]:
         group_data["selected"] = set()
-    if guess in group_data["selected"]:
+    if guess in group_data[chat_id]["selected"]:
+        await query.answer("这个食物已经被选过了~", show_alert=True)
         await query.answer("这个食物已经被选过了~", show_alert=True)
         return
-    group_data["selected"].add(guess)
+    group_data[chat_id]["selected"].add(guess)
 
     if isinstance(bad, int) and guess == bad:
         await context.bot.send_photo(
