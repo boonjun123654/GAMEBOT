@@ -1,3 +1,5 @@
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
 # 在开始 WenChi 游戏时，确保 group_data[chat_id] 是字典结构
 async def start_wenchi(update: Update, context: ContextTypes.DEFAULT_TYPE):
