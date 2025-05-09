@@ -144,12 +144,12 @@ async def handle_wenchi_guess(update: Update, context: ContextTypes.DEFAULT_TYPE
     guess = int(query.data.split(":")[1])
     bad = group_data.get(chat_id)
     
-    if "selected" not in group_data[chat_id]:
-        group_data[chat_id]["selected"] = set()
-    if guess in group_data[chat_id]["selected"]:
+    if "selected" not in group_data:
+        group_data["selected"] = set()
+    if guess in group_data["selected"]:
         await query.answer("这个食物已经被选过了~", show_alert=True)
         return
-    group_data[chat_id]["selected"].add(guess)
+    group_data["selected"].add(guess)
 
     if isinstance(bad, int) and guess == bad:
         await context.bot.send_photo(
