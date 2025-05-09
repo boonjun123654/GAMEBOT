@@ -34,7 +34,7 @@ async def handle_wenchi_guess(update: Update, context: ContextTypes.DEFAULT_TYPE
         await context.bot.send_photo(
             chat_id=chat_id,
             photo=WENCHI_FAIL_IMAGE,
-            caption=f'Oh no! WenChi吃坏肚子了！'
+            caption=f'{user} 选中了泻肚子的食物!',
 {user} 选中了泻肚子的食物！",
             reply_markup=restart_keyboard()
         )
