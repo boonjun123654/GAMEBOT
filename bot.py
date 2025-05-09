@@ -58,7 +58,8 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
     group_mode[chat_id] = mode
     if mode == "wenchi":
         bad_food = random.randint(1, 10)
-        group_data[chat_id] = bad_food
+        group_data[chat_id] = {"bad": bad_food, "selected": set()}
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
         await context.bot.send_message(
             chat_id=chat_id,
             text="😋 WenChi 今天吃什么？请选择：",
@@ -84,6 +85,7 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=chat_id, text="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
     elif mode == "wenchi":
         group_data[chat_id] = random.randint(1, 10)
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
         await context.bot.send_message(
             chat_id=chat_id,
             text="😋 WenChi 今天吃什么？请选择：",
@@ -139,7 +141,7 @@ async def handle_wenchi_guess(update: Update, context: ContextTypes.DEFAULT_TYPE
     await query.answer()
     chat_id = query.message.chat.id
     guess = int(query.data.split(":")[1])
-    bad = group_data.get(chat_id)
+    bad = group_data.get(chat_id, {}).get("bad")
     
     if chat_id not in group_data:
         group_data[chat_id] = {}
