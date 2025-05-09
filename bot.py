@@ -152,7 +152,11 @@ async def handle_wenchi_guess(update: Update, context: ContextTypes.DEFAULT_TYPE
     await query.answer()
     chat_id = query.message.chat.id
     guess = int(query.data.split(":")[1])
-    bad = group_data.get(chat_id, {}).get("bad")
+    bad = group_data[chat_id] = {
+    "bad": bad,
+    "selected": set()
+}
+
     
     if chat_id not in group_data:
         group_data[chat_id] = {"selected": set()}
