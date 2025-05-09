@@ -115,7 +115,12 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = group_data.get(chat_id)
     if not data or "bombs" not in data:
         return
+    
     if number in data["selected"]:
+        await query.answer("这个数字已经被选过了！", show_alert=True)
+        return
+
+    # 原重复检测已移除
         return
     data["selected"].add(number)
     if number in data["bombs"]:
@@ -138,6 +143,14 @@ async def handle_wenchi_guess(update: Update, context: ContextTypes.DEFAULT_TYPE
     chat_id = query.message.chat.id
     guess = int(query.data.split(":")[1])
     bad = group_data.get(chat_id)
+    
+    if "selected" not in group_data:
+        group_data["selected"] = set()
+    if guess in group_data["selected"]:
+        await query.answer("这个食物已经被选过了~", show_alert=True)
+        return
+    group_data["selected"].add(guess)
+
     if isinstance(bad, int) and guess == bad:
         await context.bot.send_photo(
             chat_id=chat_id,
