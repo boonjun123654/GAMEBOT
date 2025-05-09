@@ -58,7 +58,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
     group_mode[chat_id] = mode
     if mode == "wenchi":
         bad_food = random.randint(1, 10)
-        group_data[chat_id] = bad_food
+        group_data[chat_id] = {"bad": bad_food, "selected": set()}
         await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
         await context.bot.send_message(
             chat_id=chat_id,
@@ -93,6 +93,8 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         group_data[chat_id]["bad"] = bad
         group_data[chat_id]["selected"] = set()
+    await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
+    await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
 
         await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
         await context.bot.send_message(
