@@ -38,7 +38,7 @@ async def send_main_menu(chat_id, context):
     keyboard = [
         [InlineKeyboardButton("💣 数字炸弹", callback_data="mode:bomb")],
         [InlineKeyboardButton("💥 数字扫雷", callback_data="mode:sweeper")],
-        [InlineKeyboardButton("😋 WenChi 今天吃什么？", callback_data="mode:wenchi")]
+        [InlineKeyboardButton("😋 WenChi 今天吃什么？", callback_data="mode:wenchi")],
         [InlineKeyboardButton("🤤 酒鬼轮盘", callback_data="mode:wheel")]
     ]
     await context.bot.send_photo(
@@ -96,6 +96,13 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         group_data[chat_id]["selected"] = set()
     await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
     await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
+
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text="😋 WenChi 今天吃什么？请选择：",
+            reply_markup=get_food_keyboard()
+        )
 
 async def handle_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_main_menu(update.effective_chat.id, context)
