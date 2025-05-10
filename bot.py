@@ -212,7 +212,10 @@ async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYP
     else:
         data["max"] = min(data["max"], guess - 1)
         await context.bot.send_message(chat_id=chat_id, text=f"太大了！当前范围：{data['min']} - {data['max']}")
+
 # ====== 🍻 酒鬼轮盘模块 ======
+
+import asyncio
 
 WHEEL_TASKS = [
     "你自己喝一杯！",
@@ -232,18 +235,37 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = query.from_user
 
     if "players" not in group_data.get(chat_id, {}):
-        group_data[chat_id] = {"players": [], "state": "waiting"}
+        group_data[chat_id] = {"players": [], "state": "waiting", "current": 0}
 
-    if user.id not in [p["id"] for p in group_data[chat_id]["players"]]:
-        group_data[chat_id]["players"].append({"id": user.id, "name": user.full_name})
+    players = group_data[chat_id]["players"]
+    if user.id not in [p["id"] for p in players]:
+        players.append({"id": user.id, "name": user.full_name})
+        await context.bot.send_message(chat_id=chat_id, text=f"{user.full_name} 已报名 ✅")
 
-    player_names = "\n".join([f"- {p['name']}" for p in group_data[chat_id]["players"]])
-    chosen = random.choice(group_data[chat_id]["players"])
-    group_data[chat_id]["chosen"] = chosen["id"]
+    if group_data[chat_id]["state"] == "waiting":
+        group_data[chat_id]["state"] = "counting"
+        await context.bot.send_message(chat_id=chat_id, text="⏳ 60 秒后开始轮盘！等待其他人加入...")
+        await asyncio.sleep(60)
+        await start_wheel_game(chat_id, context)
 
+async def start_wheel_game(chat_id, context):
+    data = group_data.get(chat_id)
+    if not data or not data.get("players"):
+        await context.bot.send_message(chat_id=chat_id, text="❌ 没有玩家参与，游戏取消。")
+        group_data.pop(chat_id, None)
+        return
+
+    players = data["players"]
+    names = "\n".join([f"{i+1}. {p['name']}" for i, p in enumerate(players)])
+    data["state"] = "playing"
+    data["current"] = 0
+
+    await context.bot.send_message(chat_id=chat_id, text=f"🎉 报名结束！本轮玩家：\n{names}")
+
+    current_player = players[0]
     await context.bot.send_message(
         chat_id=chat_id,
-        text=f"✅ 当前参与者：\n{player_names}\n\n🎯 由 @{chosen['name']} 点击【旋转轮盘】！",
+        text=f"🎯 @{current_player['name']} 请点击下方按钮旋转轮盘！",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
         ])
@@ -251,32 +273,42 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    await query.answer()
     chat_id = query.message.chat.id
     user = query.from_user
+    data = group_data.get(chat_id)
 
-    if group_data.get(chat_id, {}).get("chosen") != user.id:
-        await query.answer("只有被点到的玩家可以旋转轮盘！", show_alert=True)
+    if not data or data["state"] != "playing":
+        return
+
+    players = data["players"]
+    current_index = data["current"]
+
+    if players[current_index]["id"] != user.id:
+        await query.answer("请等待轮到你再点击！", show_alert=True)
         return
 
     task = random.choice(WHEEL_TASKS)
-    await context.bot.send_message(chat_id=chat_id, text=f"🍻 轮盘任务：{task}")
-    group_data.pop(chat_id, None)
+    await context.bot.send_message(chat_id=chat_id, text=f"🍻 @{user.full_name} 抽到任务：{task}")
 
-if __name__ == "__main__":
-    token = os.getenv("BOT_TOKEN")
-    app = ApplicationBuilder().token(token).build()
-
-    app.add_handler(MessageHandler(filters.TEXT & filters.Regex("^(开始游戏)$"), start_command))
-    app.add_handler(MessageHandler(filters.TEXT & filters.TEXT, handle_sweeper_input))
-    app.add_handler(CallbackQueryHandler(handle_mode_select, pattern="^mode:"))
-    app.add_handler(CallbackQueryHandler(handle_bomb_count, pattern="^bombs:"))
-    app.add_handler(CallbackQueryHandler(handle_guess, pattern="^guess:"))
-    app.add_handler(CallbackQueryHandler(handle_wenchi_guess, pattern="^wenchi:"))
-    app.add_handler(CallbackQueryHandler(handle_restart, pattern="^restart$"))
-    app.add_handler(CallbackQueryHandler(handle_main_menu, pattern="^mainmenu$"))
-    app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
-    app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
-
-
-    print("✅ 多模式游戏 Bot 正在运行")
-    app.run_polling()
+    data["current"] += 1
+    if data["current"] >= len(players):
+        await context.bot.send_photo(
+            chat_id=chat_id,
+            photo=START_IMAGE,
+            caption="🎊 本轮酒鬼轮盘结束啦！感谢参与！",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔁 重新开始", callback_data="restart")],
+                [InlineKeyboardButton("🎮 切换游戏模式", callback_data="mainmenu")]
+            ])
+        )
+        group_data.pop(chat_id, None)
+    else:
+        next_player = players[data["current"]]
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=f"🎯 轮到 @{next_player['name']}，请点击旋转轮盘！",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
+            ])
+        )
