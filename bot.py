@@ -97,13 +97,6 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
     await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
 
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
-        await context.bot.send_message(
-            chat_id=chat_id,
-            text="😋 WenChi 今天吃什么？请选择：",
-            reply_markup=get_food_keyboard()
-        )
-
 async def handle_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_main_menu(update.effective_chat.id, context)
 
