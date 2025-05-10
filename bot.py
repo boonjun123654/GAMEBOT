@@ -38,7 +38,8 @@ async def send_main_menu(chat_id, context):
     keyboard = [
         [InlineKeyboardButton("💣 数字炸弹", callback_data="mode:bomb")],
         [InlineKeyboardButton("💥 数字扫雷", callback_data="mode:sweeper")],
-        [InlineKeyboardButton("😋 WenChi 今天吃什么？", callback_data="mode:wenchi")]
+        [InlineKeyboardButton("😋 WenChi 今天吃什么？", callback_data="mode:wenchi")],
+        [InlineKeyboardButton("🤤 酒鬼轮盘", callback_data="mode:wheel")]
     ]
     await context.bot.send_photo(
         chat_id=chat_id,
@@ -73,6 +74,17 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
         keyboard = [[InlineKeyboardButton(f"{i} 💣", callback_data=f"bombs:{i}") for i in range(1, 4)]]
         await context.bot.send_message(chat_id=chat_id, text="请选择本局💣的数量‼越多越刺激‼", reply_markup=InlineKeyboardMarkup(keyboard))
 
+    elif mode == "wheel":
+        group_data[chat_id] = {"players": [], "state": "waiting"}
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="🍻 酒鬼轮盘开始啦！点击下方按钮参与！")
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text="点击「参加」按钮报名！",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
+            ])
+        )
+
 async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -95,6 +107,13 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         group_data[chat_id]["selected"] = set()
     await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
     await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
+
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text="😋 WenChi 今天吃什么？请选择：",
+            reply_markup=get_food_keyboard()
+        )
 
 async def handle_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_main_menu(update.effective_chat.id, context)
@@ -213,6 +232,9 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_wenchi_guess, pattern="^wenchi:"))
     app.add_handler(CallbackQueryHandler(handle_restart, pattern="^restart$"))
     app.add_handler(CallbackQueryHandler(handle_main_menu, pattern="^mainmenu$"))
+    app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
+    app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
+
 
     print("✅ 多模式游戏 Bot 正在运行")
     app.run_polling()
