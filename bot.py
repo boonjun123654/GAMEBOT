@@ -281,3 +281,9 @@ async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     task = random.choice(WHEEL_TASKS)
     await context.bot.send_message(chat_id=chat_id, text=f"🍻 轮盘任务：{task}")
     group_data.pop(chat_id, None)
+
+if __name__ == "__main__":
+    app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
+    app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
+
+    app.run_polling()
