@@ -184,6 +184,19 @@ async def handle_wenchi_guess(update: Update, context: ContextTypes.DEFAULT_TYPE
     else:
         await context.bot.send_message(chat_id=chat_id, text=f"{food_options[guess - 1]} 很安全😋")
 
+async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    # 添加玩家到轮盘列表
+    chat_id = query.message.chat_id
+    user = query.from_user
+    group = group_data.setdefault(chat_id, {"players": [], "state": "waiting"})
+
+    if user.id not in [p["id"] for p in group["players"]]:
+        group["players"].append({"id": user.id, "name": user.first_name})
+
+    await context.bot.send_message(chat_id=chat_id, text=f"{user.first_name} 已加入轮盘游戏！")
+
 async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     if group_mode.get(chat_id) != "sweeper":
@@ -227,7 +240,6 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_main_menu, pattern="^mainmenu$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
-
 
     print("✅ 多模式游戏 Bot 正在运行")
     app.run_polling()
