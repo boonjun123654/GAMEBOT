@@ -231,8 +231,19 @@ if __name__ == "__main__":
 
     print("✅ 多模式游戏 Bot 正在运行")
     app.run_polling()
-# ====== 🍻 酒鬼轮盘优化流程 ======
-import asyncio
+
+# ====== 🍻 酒鬼轮盘模块 ======
+
+WHEEL_TASKS = [
+    "你自己喝一杯！",
+    "选一个人陪你喝！",
+    "大家一起喝一杯！",
+    "你安全了，选别人喝！",
+    "真心话 or 喝1杯！",
+    "本轮没事，不用喝！",
+    "指定人喝，不限人数！",
+    "本轮没事，下轮翻倍！"
+]
 
 async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -241,36 +252,18 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = query.from_user
 
     if "players" not in group_data.get(chat_id, {}):
-        group_data[chat_id] = {"players": [], "state": "waiting", "current": 0}
+        group_data[chat_id] = {"players": [], "state": "waiting"}
 
     if user.id not in [p["id"] for p in group_data[chat_id]["players"]]:
         group_data[chat_id]["players"].append({"id": user.id, "name": user.full_name})
-        await context.bot.send_message(chat_id=chat_id, text=f"{user.full_name} 已报名 ✅")
 
-    # 若第一次触发，启动倒计时任务
-    if group_data[chat_id]["state"] == "waiting":
-        group_data[chat_id]["state"] = "countdown"
-        await context.bot.send_message(chat_id=chat_id, text="🕒 报名倒计时 60 秒开始！")
-        await asyncio.sleep(60)
-        await start_wheel_game(chat_id, context)
+    player_names = "\n".join([f"- {p['name']}" for p in group_data[chat_id]["players"]])
+    chosen = random.choice(group_data[chat_id]["players"])
+    group_data[chat_id]["chosen"] = chosen["id"]
 
-async def start_wheel_game(chat_id, context):
-    data = group_data.get(chat_id)
-    if not data or not data.get("players"):
-        await context.bot.send_message(chat_id=chat_id, text="😥 没有人报名，轮盘游戏取消。")
-        group_data.pop(chat_id, None)
-        return
-
-    players = data["players"]
-    data["state"] = "playing"
-    data["current"] = 0
-    names = "\n".join([f"{i+1}. {p['name']}" for i, p in enumerate(players)])
-    await context.bot.send_message(chat_id=chat_id, text=f"✅ 报名结束！参与者名单：\n{names}")
-
-    first = players[0]
     await context.bot.send_message(
         chat_id=chat_id,
-        text=f"🎯 由 @{first['name']} 开始旋转轮盘：",
+        text=f"✅ 当前参与者：\n{player_names}\n\n🎯 由 @{chosen['name']} 点击【旋转轮盘】！",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
         ])
@@ -278,42 +271,13 @@ async def start_wheel_game(chat_id, context):
 
 async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
     chat_id = query.message.chat.id
     user = query.from_user
-    data = group_data.get(chat_id)
 
-    if not data or data["state"] != "playing":
-        return
-
-    current = data["current"]
-    players = data["players"]
-    if players[current]["id"] != user.id:
-        await query.answer("请等待轮到你再点击～", show_alert=True)
+    if group_data.get(chat_id, {}).get("chosen") != user.id:
+        await query.answer("只有被点到的玩家可以旋转轮盘！", show_alert=True)
         return
 
     task = random.choice(WHEEL_TASKS)
-    await context.bot.send_message(chat_id=chat_id, text=f"🎡 @{user.full_name} 抽到：{task}")
-
-    data["current"] += 1
-    if data["current"] >= len(players):
-        await context.bot.send_message(
-            chat_id=chat_id,
-            photo=START_IMAGE,
-            caption="🍻 本轮游戏结束啦！感谢参与～",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔁 重新开始", callback_data="restart")],
-                [InlineKeyboardButton("🎮 切换游戏模式", callback_data="mainmenu")]
-            ])
-        )
-        group_data.pop(chat_id, None)
-        return
-
-    next_player = players[data["current"]]
-    await context.bot.send_message(
-        chat_id=chat_id,
-        text=f"🎯 到 @{next_player['name']} 啦！请点击【旋转轮盘】",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
-        ])
-    )
+    await context.bot.send_message(chat_id=chat_id, text=f"🍻 轮盘任务：{task}")
+    group_data.pop(chat_id, None)
