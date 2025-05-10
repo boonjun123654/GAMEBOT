@@ -212,26 +212,6 @@ async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYP
     else:
         data["max"] = min(data["max"], guess - 1)
         await context.bot.send_message(chat_id=chat_id, text=f"太大了！当前范围：{data['min']} - {data['max']}")
-
-if __name__ == "__main__":
-    token = os.getenv("BOT_TOKEN")
-    app = ApplicationBuilder().token(token).build()
-
-    app.add_handler(MessageHandler(filters.TEXT & filters.Regex("^(开始游戏)$"), start_command))
-    app.add_handler(MessageHandler(filters.TEXT & filters.TEXT, handle_sweeper_input))
-    app.add_handler(CallbackQueryHandler(handle_mode_select, pattern="^mode:"))
-    app.add_handler(CallbackQueryHandler(handle_bomb_count, pattern="^bombs:"))
-    app.add_handler(CallbackQueryHandler(handle_guess, pattern="^guess:"))
-    app.add_handler(CallbackQueryHandler(handle_wenchi_guess, pattern="^wenchi:"))
-    app.add_handler(CallbackQueryHandler(handle_restart, pattern="^restart$"))
-    app.add_handler(CallbackQueryHandler(handle_main_menu, pattern="^mainmenu$"))
-    app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
-    app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
-
-
-    print("✅ 多模式游戏 Bot 正在运行")
-    app.run_polling()
-
 # ====== 🍻 酒鬼轮盘模块 ======
 
 WHEEL_TASKS = [
@@ -283,7 +263,20 @@ async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     group_data.pop(chat_id, None)
 
 if __name__ == "__main__":
+    token = os.getenv("BOT_TOKEN")
+    app = ApplicationBuilder().token(token).build()
+
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex("^(开始游戏)$"), start_command))
+    app.add_handler(MessageHandler(filters.TEXT & filters.TEXT, handle_sweeper_input))
+    app.add_handler(CallbackQueryHandler(handle_mode_select, pattern="^mode:"))
+    app.add_handler(CallbackQueryHandler(handle_bomb_count, pattern="^bombs:"))
+    app.add_handler(CallbackQueryHandler(handle_guess, pattern="^guess:"))
+    app.add_handler(CallbackQueryHandler(handle_wenchi_guess, pattern="^wenchi:"))
+    app.add_handler(CallbackQueryHandler(handle_restart, pattern="^restart$"))
+    app.add_handler(CallbackQueryHandler(handle_main_menu, pattern="^mainmenu$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
 
+
+    print("✅ 多模式游戏 Bot 正在运行")
     app.run_polling()
