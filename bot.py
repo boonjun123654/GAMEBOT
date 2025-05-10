@@ -82,7 +82,7 @@ async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=chat_id,
         text=f"✅ 报名结束，{len(players)} 位玩家参加。"
-🎯 当前轮到：text = f"\U0001F449 当前轮到: {current_player['name']}"
+🎯 当前轮到：text ="当前轮到: {current_player['name']}"
 ,
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
