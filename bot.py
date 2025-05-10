@@ -3,13 +3,15 @@ import random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, CallbackQueryHandler,
-    ContextTypes, JobQueue
+    ContextTypes
 )
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 group_data = {}
 
 START_IMAGE = "https://i.imgur.com/NJg6mjJ.jpeg"
+WENCHI_FAIL_IMAGE = "https://i.imgur.com/WeYjoPN.jpeg"
+
 WHEEL_TASKS = [
     "你自己喝一杯！", "选一个人陪你喝！", "大家一起喝一杯！", "你安全了，选别人喝！",
     "真心话 or 喝1杯！", "本轮没事，不用喝！", "指定人喝，不限人数！", "本轮没事，下轮翻倍！"
@@ -45,13 +47,13 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await context.job_queue.run_once(start_wheel_game, 60, data=chat_id)
 
     elif mode == "wenchi":
-        await context.bot.send_message(chat_id=chat_id, text="（保留 WenChi 游戏逻辑）")
+        await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 模式启动！请选择食物（逻辑保留）。")
 
     elif mode == "bomb":
-        await context.bot.send_message(chat_id=chat_id, text="（保留数字炸弹逻辑）")
+        await context.bot.send_message(chat_id=chat_id, text="💣 数字炸弹模式启动！（逻辑保留）")
 
     elif mode == "sweeper":
-        await context.bot.send_message(chat_id=chat_id, text="（保留数字扫雷逻辑）")
+        await context.bot.send_message(chat_id=chat_id, text="💥 数字扫雷模式启动！（逻辑保留）")
 
 async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -76,19 +78,17 @@ async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
         return
 
     players = data["players"]
-    names = "\n".join([f"- {p['name']}" for p in players])
     current_player = players[0]
+    data["state"] = "playing"
 
     await context.bot.send_message(
         chat_id=chat_id,
-        text=f"✅ 报名结束，{len(players)} 位玩家参加。"
-🎯 当前轮到：text = f"👉 当前轮到: {current_player['name']}"
-,
+        text=f"✅ 报名结束，共 {len(players)} 位玩家参加。
+👉 当前轮到: {current_player['name']}",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
+            [InlineKeyboardButton("🎯 旋转轮盘", callback_data="spin:wheel")]
         ])
     )
-    data["state"] = "playing"
 
 async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -109,7 +109,6 @@ async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     task = random.choice(WHEEL_TASKS)
     await context.bot.send_message(chat_id=chat_id, text=f"🎡 {user.full_name} 转到：{task}")
 
-    # 下一个玩家
     data["current"] += 1
     if data["current"] >= len(players):
         await context.bot.send_message(chat_id=chat_id, text="✅ 所有人都完成任务啦！🎉 游戏结束～")
@@ -119,9 +118,9 @@ async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     next_player = players[data["current"]]
     await context.bot.send_message(
         chat_id=chat_id,
-        text=f"🎯 到 @{next_player['name']} 啦！",
+        text=f"👉 当前轮到: {next_player['name']}",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
+            [InlineKeyboardButton("🎯 旋转轮盘", callback_data="spin:wheel")]
         ])
     )
 
