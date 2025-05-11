@@ -255,7 +255,8 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-async def start_wheel_game(chat_id, context):
+async def start_wheel_game(context:ContextTypes.DEFAULT_TYPE):
+    chat_id = context.job.data
     data = group_data.get(chat_id)
     if not data or not data.get("players"):
         await context.bot.send_message(chat_id=chat_id, text="❌ 没有玩家参与，游戏取消。")
