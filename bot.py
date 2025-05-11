@@ -40,7 +40,7 @@ async def end_countdown(context: ContextTypes.DEFAULT_TYPE) -> None:
     await context.bot.send_message(chat_id=chat_id, text="⏰ 倒计时测试成功！")
 
 def main() -> None:
-    app = ApplicationBuilder().token("7588230146:AAEMsvkdfptGr0CsYIO4L-ZEsPKlC7KH1K8").build()
+    app = ApplicationBuilder().token("BOT_TOKEN").build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(roulette_callback, pattern="^roulette$"))
     app.run_polling()
