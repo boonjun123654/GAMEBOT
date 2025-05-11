@@ -249,7 +249,7 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=chat_id,
                 text="⏳ 60 秒后开始轮盘！等待其他人加入..."
             )
-            job_queue.run_once(start_wheel_game, 60, data=chat_id)
+            context.job_queue.run_once(start_wheel_game_job, 60, data=chat_id)
     else:
         await query.answer("你已经报名了！", show_alert=True)
 
@@ -278,6 +278,9 @@ async def start_wheel_game(context:ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
         ])
     )
+
+def start_wheel_job(context:CallbackContext):
+    asyncio.create_task(start_wheel_game(context))
 
 async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
