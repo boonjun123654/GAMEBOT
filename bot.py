@@ -249,7 +249,7 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=chat_id,
                 text="⏳ 60 秒后开始轮盘！等待其他人加入..."
             )
-            context.job_queue.run_once(start_wheel_game, 60, data=chat_id)
+            job_queue.run_once(start_wheel_game, 60, data=chat_id)
     else:
         await query.answer("你已经报名了！", show_alert=True)
 
@@ -338,4 +338,5 @@ if __name__ == "__main__":
 
 
     print("✅ 多模式游戏 Bot 正在运行")
+    job_queue = app.job_queue
     app.run_polling()
