@@ -324,8 +324,8 @@ async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 if __name__ == "__main__":
-    token = os.getenv("BOT_TOKEN")
     app = ApplicationBuilder().token(token).build()
+    job_queue = app.job_queue  # ⬅️ 确保 job_queue 激活
 
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex("^(开始游戏)$"), start_command))
     app.add_handler(MessageHandler(filters.TEXT & filters.TEXT, handle_sweeper_input))
