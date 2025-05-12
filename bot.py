@@ -250,7 +250,7 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text="⏳ 60 秒后开始轮盘！等待其他人加入..."
             )
     context.application.job_queue.run_once(
-        end_countdown,
+        start_wheel_game,
         when=60,
         data={'chat_id': chat_id}
 )
@@ -258,9 +258,8 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await query.answer("你已经报名了！", show_alert=True)
 
-
-async def start_wheel_game(context: CallbackContext):
-    chat_id = context.job.data  # we’ll pass chat_id as data
+async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
+    chat_id = context.job.data['chat_id']
     data = group_data.get(chat_id)
     if not data or not data.get("players"):
         await context.bot.send_message(chat_id, "❌ 没有玩家参与，游戏取消。")
