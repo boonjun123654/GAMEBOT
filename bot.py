@@ -76,14 +76,22 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     elif mode == "wheel":
         group_data[chat_id] = {"players": [], "state": "waiting"}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="🍻 酒鬼轮盘开始啦！点击下方按钮参与！")
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="🍻 酒鬼轮盘开始啦！")
         await context.bot.send_message(
             chat_id=chat_id,
-            text="点击「参加」按钮报名！",
+            text="🍻 酒鬼轮盘开始了！\n🕒 倒计时60秒，点击下方「🍺 我要参加」按钮报名参与！",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
             ])
         )
+
+        # 🕒 启动 60 秒倒计时任务
+        context.application.job_queue.run_once(
+            start_wheel_game,
+            when=60,
+            data={'chat_id': chat_id}
+        )
+
 
 async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -247,13 +255,6 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
         group_data[chat_id]["state"] = "counting"
         await context.bot.send_message(
             chat_id=chat_id,
-            text="⏳ 60 秒后开始轮盘！等待其他人加入..."
-        )
-        context.application.job_queue.run_once(
-            start_wheel_game,
-            when=60,
-            data={'chat_id': chat_id}
-        )
 
     else:
         await query.answer("你已经报名了！", show_alert=True)
