@@ -255,8 +255,8 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
             data={'chat_id': chat_id}
         )
 
-else:
-    await query.answer("你已经报名了！", show_alert=True)
+    else:
+        await query.answer("你已经报名了！", show_alert=True)
 
 
 async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
