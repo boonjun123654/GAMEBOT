@@ -61,7 +61,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
         bad_food = random.randint(1, 10)
         group_data[chat_id] = {"bad": bad_food, "selected": set()}
         await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？请选择："),
-            reply_markup=get_food_keyboard()
+        reply_markup=get_food_keyboard()
     elif mode == "sweeper":
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
         await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
