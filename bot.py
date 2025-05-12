@@ -253,8 +253,6 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if group_data[chat_id]["state"] == "waiting":
         group_data[chat_id]["state"] = "counting"
-        await context.bot.send_message(
-            chat_id=chat_id,
 
     else:
         await query.answer("你已经报名了！", show_alert=True)
