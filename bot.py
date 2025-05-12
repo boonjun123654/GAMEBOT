@@ -239,24 +239,25 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     players = group_data[chat_id]["players"]
 
-    if user.id not in [p["id"] for p in players]:
-        players.append({"id": user.id, "name": user.full_name})
-        await context.bot.send_message(chat_id=chat_id, text=f"{user.full_name} 已报名 📝")
+   if user.id not in [p["id"] for p in players]:
+    players.append({"id": user.id, "name": user.full_name})
+    await context.bot.send_message(chat_id=chat_id, text=f"{user.full_name} 已报名 📝")
 
-        if group_data[chat_id]["state"] == "waiting":
-            group_data[chat_id]["state"] = "counting"
-            await context.bot.send_message(
-                chat_id=chat_id,
-                text="⏳ 60 秒后开始轮盘！等待其他人加入..."
-            )
-    context.application.job_queue.run_once(
-        start_wheel_game,
-        when=60,
-        data={'chat_id': chat_id}
-)
+    if group_data[chat_id]["state"] == "waiting":
+        group_data[chat_id]["state"] = "counting"
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text="⏳ 60 秒后开始轮盘！等待其他人加入..."
+        )
+        context.application.job_queue.run_once(
+            start_wheel_game,
+            when=60,
+            data={'chat_id': chat_id}
+        )
 
-    else:
-        await query.answer("你已经报名了！", show_alert=True)
+else:
+    await query.answer("你已经报名了！", show_alert=True)
+
 
 async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
     chat_id = context.job.data['chat_id']
