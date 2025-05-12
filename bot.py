@@ -249,33 +249,36 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=chat_id,
                 text="⏳ 60 秒后开始轮盘！等待其他人加入..."
             )
-            context.job_queue.run_once(start_wheel_game, 60, data=chat_id)
+    context.application.job_queue.run_once(
+        end_countdown,
+        when=60,
+        data={'chat_id': chat_id}
+)
+
     else:
         await query.answer("你已经报名了！", show_alert=True)
 
 
-
-async def start_wheel_game(chat_id, context):
+async def start_wheel_game(context: CallbackContext):
+    chat_id = context.job.data  # we’ll pass chat_id as data
     data = group_data.get(chat_id)
     if not data or not data.get("players"):
-        await context.bot.send_message(chat_id=chat_id, text="❌ 没有玩家参与，游戏取消。")
+        await context.bot.send_message(chat_id, "❌ 没有玩家参与，游戏取消。")
         group_data.pop(chat_id, None)
         return
 
     players = data["players"]
-    names = "\n".join([f"{i+1}. {p['name']}" for i, p in enumerate(players)])
+    names = "\n".join(f"{i+1}. {p['name']}" for i, p in enumerate(players))
     data["state"] = "playing"
     data["current"] = 0
 
-    await context.bot.send_message(chat_id=chat_id, text=f"🎉 报名结束！本轮玩家：\n{names}")
+    await context.bot.send_message(chat_id, f"🎉 报名结束！本轮玩家：\n{names}")
 
-    current_player = players[0]
+    current = players[0]
     await context.bot.send_message(
-        chat_id=chat_id,
-        text=f"🎯 @{current_player['name']} 请点击下方按钮旋转轮盘！",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
-        ])
+        chat_id,
+        text=f"🎯 @{current['name']} 请点击下方按钮旋转轮盘！",
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]])
     )
 
 async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
