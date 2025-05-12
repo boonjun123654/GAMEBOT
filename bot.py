@@ -72,7 +72,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     elif mode == "wheel":
         group_data[chat_id] = {"players": [], "state": "waiting"}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="🍻酒鬼轮盘开始了！🕒倒计时60秒\n点击下方「🍺 我要参加」按钮报名参与！",
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="🍻酒鬼轮盘开始了！🕒倒计时60秒\n\n点击「🍺 我要参加」一起玩！",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
             ])
