@@ -72,7 +72,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
     elif mode == "bomb":
         keyboard = [[InlineKeyboardButton(f"{i} 💣", callback_data=f"bombs:{i}") for i in range(1, 4)]]
-        await context.bot.send_message(chat_id=chat_id, caption="请选择本局💣的数量‼越多越刺激‼", reply_markup=InlineKeyboardMarkup(keyboard))
+        await context.bot.send_message(chat_id=chat_id, text="请选择本局💣的数量‼越多越刺激‼", reply_markup=InlineKeyboardMarkup(keyboard))
 
     elif mode == "wheel":
         group_data[chat_id] = {"players": [], "state": "waiting"}
@@ -274,7 +274,7 @@ async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_video(
         chat_id,video=VIDEO_JiuGui,
         supports_streaming=True,
-        text=f"🎯 @{current['name']} 请点击下方按钮旋转轮盘！",
+        caption=f"🎯 @{current['name']} 请点击下方按钮旋转轮盘！",
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]])
     )
 
