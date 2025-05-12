@@ -240,8 +240,8 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     players = group_data[chat_id]["players"]
 
     if user.id not in [p["id"] for p in players]:
-    players.append({"id": user.id, "name": user.full_name})
-    await context.bot.send_message(chat_id=chat_id, text=f"{user.full_name} 已报名 📝")
+        players.append({"id": user.id, "name": user.full_name})
+        await context.bot.send_message(chat_id=chat_id, text=f"{user.full_name} 已报名 📝")
 
     if group_data[chat_id]["state"] == "waiting":
         group_data[chat_id]["state"] = "counting"
