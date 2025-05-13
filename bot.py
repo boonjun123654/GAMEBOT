@@ -19,14 +19,21 @@ ENG_JiuGui = "https://i.imgur.com/K1O0KnR.png"
 
 food_options = [
     "泰国餐", "泰式烧烤", "韩式烧烤", "啦啦煲", "越南餐",
-    "中国餐", "火锅", "BBQ", "酸菜鱼", "日式火锅"
+    "中国餐", "火锅", "Sushi", "酸菜鱼", "日式火锅"
 ]
 
 def get_food_keyboard():
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(f, callback_data=f"wenchi:{i+1}")]
-        for i, f in enumerate(food_options)
-    ])
+    keyboard = []
+    row = []
+    for i, f in enumerate(food_options):
+        row.append(InlineKeyboardButton(f, callback_data=f"wenchi:{i+1}"))
+        if len(row) == 3:
+            keyboard.append(row)
+            row = []
+    if row:
+        keyboard.append(row)
+    return InlineKeyboardMarkup(keyboard)
+
 
 def get_bomb_keyboard():
     keyboard = []
