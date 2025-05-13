@@ -62,9 +62,9 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
     mode = query.data.split(":")[1]
     chat_id = query.message.chat.id
     group_mode[chat_id] = mode
-    if mode == "wenchi":
-        bad_food = random.randint(1, 10)
-        group_data[chat_id] = {"bad": bad_food, "selected": set()}
+    elif mode == "wenchi":
+        bad = random.randint(1, 10)
+        group_data[chat_id] = {"bad": bad, "selected": set()}
 
         await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_WenChi, caption="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
 
@@ -95,25 +95,38 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     await query.message.edit_reply_markup(reply_markup=None)
+
     chat_id = query.message.chat.id
     mode = group_mode.get(chat_id)
+
     if mode == "bomb":
         keyboard = [[InlineKeyboardButton(f"{i} 💣", callback_data=f"bombs:{i}") for i in range(1, 4)]]
         await context.bot.send_message(chat_id=chat_id, text="请选择本局💣的数量‼越多越刺激‼", reply_markup=InlineKeyboardMarkup(keyboard))
+
     elif mode == "sweeper":
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="💥 数字扫雷游戏开始！范围：1–100")
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb, caption="💥 数字扫雷游戏开始！范围：1–100")
         await context.bot.send_message(chat_id=chat_id, text="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
+
     elif mode == "wenchi":
         bad = random.randint(1, 10)
-
-    if chat_id not in group_data or not isinstance(group_data[chat_id], dict):
         group_data[chat_id] = {"bad": bad, "selected": set()}
-    else:
-        group_data[chat_id]["bad"] = bad
-        group_data[chat_id]["selected"] = set()
-    await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE, caption="😋 WenChi 今天吃什么？游戏开始！")
-    await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_WenChi, caption="😋 WenChi 今天吃什么？游戏开始！")
+        await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
+
+    elif mode == "wheel":
+        group_data[chat_id] = {"players": [], "state": "waiting"}
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时60秒\n\n点击「🍺 我要参加」一起玩！",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
+            ])
+        )
+        context.application.job_queue.run_once(
+            start_wheel_game,
+            when=60,
+            data={'chat_id': chat_id}
+        )
+
 
 async def handle_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
