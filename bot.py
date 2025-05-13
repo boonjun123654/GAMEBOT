@@ -62,11 +62,11 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
     mode = query.data.split(":")[1]
     chat_id = query.message.chat.id
     group_mode[chat_id] = mode
-    elif mode == "wenchi":
-        bad = random.randint(1, 10)
-        group_data[chat_id] = {"bad": bad, "selected": set()}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_WenChi, caption="😋 WenChi 今天吃什么？游戏开始！")
-        await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
+    if mode == "wenchi":
+        bad_food = random.randint(1, 10)
+        group_data[chat_id] = {"bad": bad_food, "selected": set()}
+
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_WenChi, caption="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
 
     elif mode == "sweeper":
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
