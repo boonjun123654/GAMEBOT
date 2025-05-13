@@ -105,14 +105,12 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif mode == "sweeper":
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb, caption="💥 数字扫雷游戏开始！范围：1–100")
-        await context.bot.send_message(chat_id=chat_id, text="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
 
     elif mode == "wenchi":
         bad = random.randint(1, 10)
         group_data[chat_id] = {"bad": bad, "selected": set()}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_WenChi, caption="😋 WenChi 今天吃什么？游戏开始！")
-        await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_WenChi, caption="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
 
     elif mode == "wheel":
         group_data[chat_id] = {"players": [], "state": "waiting"}
