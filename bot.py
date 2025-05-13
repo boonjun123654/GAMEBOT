@@ -58,6 +58,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    await query.message.delete()
     mode = query.data.split(":")[1]
     chat_id = query.message.chat.id
     group_mode[chat_id] = mode
@@ -93,6 +94,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
 async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    await query.message.edit_reply_markup(reply_markup=None)
     chat_id = query.message.chat.id
     mode = group_mode.get(chat_id)
     if mode == "bomb":
@@ -114,11 +116,13 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=chat_id, text="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
 
 async def handle_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await query.message.edit_reply_markup(reply_markup=None)
     await send_main_menu(update.effective_chat.id, context)
 
 async def handle_bomb_count(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    await query.message.delete()
     count = int(query.data.split(":")[1])
     chat_id = query.message.chat.id
     bombs = random.sample(range(1, 11), k=count)
@@ -281,6 +285,7 @@ async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
 async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    await query.message.delete()
     chat_id = query.message.chat.id
     user = query.from_user
     data = group_data.get(chat_id)
