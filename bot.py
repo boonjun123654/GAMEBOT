@@ -23,16 +23,10 @@ food_options = [
 ]
 
 def get_food_keyboard():
-    keyboard = []
-    row = []
-    for i, f in enumerate(food_options):
-        row.append(InlineKeyboardButton(f, callback_data=f"wenchi:{i+1}"))
-        if len(row) == 2:
-            keyboard.append(row)
-            row = []
-    if row:
-        keyboard.append(row)
-    return InlineKeyboardMarkup(keyboard)
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(f, callback_data=f"wenchi:{i+1}")]
+        for i, f in enumerate(food_options)
+    ])
 
 
 def get_bomb_keyboard():
