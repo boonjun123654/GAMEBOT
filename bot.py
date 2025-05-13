@@ -27,7 +27,7 @@ def get_food_keyboard():
     row = []
     for i, f in enumerate(food_options):
         row.append(InlineKeyboardButton(f, callback_data=f"wenchi:{i+1}"))
-        if len(row) == 3:
+        if len(row) == 2:
             keyboard.append(row)
             row = []
     if row:
