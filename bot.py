@@ -62,7 +62,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
     mode = query.data.split(":")[1]
     chat_id = query.message.chat.id
     group_mode[chat_id] = mode
-    elif mode == "wenchi":
+    if mode == "wenchi":
         bad = random.randint(1, 10)
         group_data[chat_id] = {"bad": bad, "selected": set()}
 
