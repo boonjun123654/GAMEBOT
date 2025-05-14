@@ -1,5 +1,6 @@
 import os
 import random
+import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 
@@ -326,6 +327,8 @@ async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     task = random.choice(WHEEL_TASKS)
     await context.bot.send_message(chat_id=chat_id, text=f"🍻 @{user.full_name} 抽到任务：{task}")
+
+    await asyncio.sleep(5)
 
     data["current"] += 1
     if data["current"] >= len(players):
