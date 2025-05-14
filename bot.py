@@ -78,14 +78,16 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await context.bot.send_message(chat_id=chat_id, text="请选择本局💣的数量‼越多越刺激‼", reply_markup=InlineKeyboardMarkup(keyboard))
 
     elif mode == "wheel":
-        group_data[chat_id] = {"players": [], "state": "waiting"}
         msg = await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时60秒\n\n点击「🍺 我要参加」一起玩！",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
             ])
         )
-        group_data.setdefault(chat_id, {"players": [], "state": "waiting"})
-        group_data[chat_id]["join_msg_id"] = msg.message_id
+        group_data[chat_id] = {
+            "players": [],
+            "state": "waiting",
+            "join_msg_id": msg.message_id
+
 
         # 🕒 启动 60 秒倒计时任务
         context.application.job_queue.run_once(
