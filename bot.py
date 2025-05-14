@@ -78,7 +78,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     elif mode == "wheel":
         group_data[chat_id] = {"players": [], "state": "waiting"}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时60秒\n\n点击「🍺 我要参加」一起玩！",
+        msg = await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时60秒\n\n点击「🍺 我要参加」一起玩！",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
             ])
@@ -90,7 +90,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
             when=60,
             data={'chat_id': chat_id}
         )
-
+        group_data[chat_id]["join_msg_id"] = msg.message_id
 
 async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -275,6 +275,16 @@ async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
     chat_id = context.job.data['chat_id']
     data = group_data.get(chat_id)
+    join_msg_id = data.get("join_msg_id")
+    if join_msg_id:
+        try:
+            await context.bot.edit_message_reply_markup(
+                chat_id=chat_id,
+                message_id=join_msg_id,
+                reply_markup=None
+            )
+        except:
+            pass
     if not data or not data.get("players"):
         await context.bot.send_message(chat_id, "❌ 没有玩家参与，游戏取消。")
         group_data.pop(chat_id, None)
