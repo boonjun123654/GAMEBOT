@@ -388,6 +388,10 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(set_werewolf_mode, pattern="^werewolf_mode_"))
     app.add_handler(CallbackQueryHandler(join_werewolf, pattern="^werewolf_join$"))
     app.add_handler(CallbackQueryHandler(view_my_word, pattern="^werewolf_view_word$"))
+    app.add_handler(CallbackQueryHandler(handle_vote, pattern="^werewolf:vote:"))
+    app.add_handler(CallbackQueryHandler(handle_vote2, pattern="^werewolf:vote2:"))
+    app.add_handler(CallbackQueryHandler(start_game_restart, pattern="^werewolf:restart$"))
+
 
 
     print("✅ 多模式游戏 Bot 正在运行")
