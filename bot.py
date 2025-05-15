@@ -3,6 +3,12 @@ import random
 import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CallbackQueryHandler, MessageHandler, filters
+from werewolf import (
+    entry_werewolf,
+    set_werewolf_mode,
+    join_werewolf,
+    view_my_word
+)
 
 # 全局游戏状态
 group_mode = {}     # 每个群当前模式
@@ -45,8 +51,9 @@ async def send_main_menu(chat_id, context):
         [InlineKeyboardButton("💣 数字炸弹", callback_data="mode:bomb")],
         [InlineKeyboardButton("💥 数字扫雷", callback_data="mode:sweeper")],
         [InlineKeyboardButton("😋 WenChi 今天吃什么？", callback_data="mode:wenchi")],
-        [InlineKeyboardButton("🤤 酒鬼轮盘", callback_data="mode:wheel")]
-    ]
+        [InlineKeyboardButton("🤤 酒鬼轮盘", callback_data="mode:wheel")],
+        [InlineKeyboardButton("5 - 谁是卧底", callback_data="game_werewolf")]
+]
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=MAIN_MENU_IMAGE,
@@ -371,6 +378,10 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_main_menu, pattern="^mainmenu$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
+    app.add_handler(CallbackQueryHandler(entry_werewolf, pattern="^game_werewolf$"))
+    app.add_handler(CallbackQueryHandler(set_werewolf_mode, pattern="^werewolf_mode_"))
+    app.add_handler(CallbackQueryHandler(join_werewolf, pattern="^werewolf_join$"))
+    app.add_handler(CallbackQueryHandler(view_my_word, pattern="^werewolf_view_word$"))
 
 
     print("✅ 多模式游戏 Bot 正在运行")
