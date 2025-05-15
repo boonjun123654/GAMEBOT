@@ -123,8 +123,7 @@ async def start_description_phase(chat_id: int, context: ContextTypes.DEFAULT_TY
     players = game_state["players"]
     await bot.send_message(
         chat_id,
-        "🗣 描述阶段开始！请每位玩家用一句话描述你的词语。
-⚠️ 请真实描述，不可说谎。"
+        "🗣 描述阶段开始！请每位玩家用一句话描述你的词语。\n⚠️ 请真实描述，不可说谎。"
     )
     for uid in players:
         uname = context.bot_data.get(uid, {}).get("name", f"玩家({uid})")
