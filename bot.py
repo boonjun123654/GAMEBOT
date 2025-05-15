@@ -19,8 +19,8 @@ VIDEO_JiuGui = "https://i.imgur.com/TQcVLSp.mp4"
 ENG_JiuGui = "https://i.imgur.com/K1O0KnR.png"
 
 food_options = [
-    "泰国餐", "泰式烧烤", "韩式烧烤", "啦啦煲", "越南餐",
-    "中国餐", "火锅", "Sushi", "酸菜鱼", "日式火锅"
+    "酱到流油的烤鸡翅", "香到爆的猪肉串", "辣哭你的麻辣烫", "泡菜盖顶火锅面", "满满起司的炸年糕",
+    "咬一口喷香烧肉饭", "一口爆汁的小笼包", "蘸满酱的泰式炸虾", "芝士狂魔披萨片", "三秒吞完的寿司卷"
 ]
 
 def get_food_keyboard():
@@ -243,14 +243,14 @@ async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYP
 import asyncio
 
 WHEEL_TASKS = [
-    "你自己喝一杯！",
-    "选一个人陪你喝！",
-    "大家一起喝一杯！",
-    "你安全了，选别人喝！",
-    "真心话 or 喝1杯！",
-    "本轮没事，不用喝！",
+    "点名！选个人帮你喝！",
+    "干杯！全员一起喝！",
+    "倒满，自己干了！",
+    "拉个倒霉蛋来喝",
+    "剪刀石头布，输的喝！",
+    "喊 5/10/15，谁输谁喝！",
     "指定人喝，不限人数！",
-    "找一个人玩剪刀石头布，输了喝一杯！"
+    "恭喜你，不用喝！"
 ]
 
 async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -325,6 +325,8 @@ async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if players[current_index]["id"] != user.id:
         await query.answer("请等待轮到你再点击！", show_alert=True)
         return
+
+    await query.message.edit_reply_markup(reply_markup=None)
 
     task = random.choice(WHEEL_TASKS)
     await context.bot.send_message(chat_id=chat_id, text=f"🍻 @{user.full_name} 抽到任务：{task}")
