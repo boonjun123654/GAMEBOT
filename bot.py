@@ -3,12 +3,18 @@ import random
 import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CallbackQueryHandler, MessageHandler, filters
-from werewolf_bot import (
-    entry_werewolf,
-    set_werewolf_mode,
-    join_werewolf,
-    view_my_word
+from werewolf import (
+    entry_game,
+    set_mode,
+    join_game,
+    view_word
 )
+
+app.add_handler(CallbackQueryHandler(entry_game, pattern="^game_werewolf$"))
+app.add_handler(CallbackQueryHandler(set_mode, pattern="^mode_"))
+app.add_handler(CallbackQueryHandler(join_game, pattern="^join_game$"))
+app.add_handler(CallbackQueryHandler(view_word, pattern="^view_word$"))
+
 
 # 全局游戏状态
 group_mode = {}     # 每个群当前模式
