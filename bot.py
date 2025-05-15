@@ -379,7 +379,7 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
     app.add_handler(CallbackQueryHandler(entry_game, pattern="^game_werewolf$"))
-    app.add_handler(CallbackQueryHandler(set_werewolf_mode, pattern="^werewolf_mode_"))
+    app.add_handler(CallbackQueryHandler(set_werewolf_mode, pattern="^werewolf:mode:"))
     app.add_handler(CallbackQueryHandler(join_werewolf, pattern="^werewolf_join$"))
     app.add_handler(CallbackQueryHandler(view_my_word, pattern="^werewolf_view$"))
     app.add_handler(CallbackQueryHandler(handle_vote, pattern="^werewolf:vote:"))
