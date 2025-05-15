@@ -68,8 +68,7 @@ async def join_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.bot_data[uid] = {"name": uname}
     keyboard = [[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]]
     await query.edit_message_text(
-        f"当前已报名人数：{len(game_state['players'])}
-点击继续加入（剩余时间内）",
+        f"当前已报名人数：{len(game_state['players'])}\\n点击继续加入（剩余时间内）",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
