@@ -293,8 +293,7 @@ async def reveal_result(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
     for uid in game_state["players"]:
         role = "卧底" if uid == game_state["undercover"] else "白板" if uid == game_state["whiteboard"] else "平民"
         name = context.bot_data.get(uid, {}).get("name", str(uid))
-        msg += f"- {name}：{role}
-"
+        msg += f"- {name}：{role}\n"
 
     await bot.send_message(chat_id, msg, reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("🔁 重新开始", callback_data="werewolf:restart")],
