@@ -51,8 +51,7 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     })
     keyboard = [[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]]
     await query.edit_message_text(
-        f"🕹 模式已设定为：{mode}
-请在 60 秒内点击下方按钮报名：",
+        f"🕹 模式已设定为：{mode}\\n请在 60 秒内点击下方按钮报名：",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
     context.job_queue.run_once(end_registration, 60, data=query.message.chat_id)
