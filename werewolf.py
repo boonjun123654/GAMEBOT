@@ -283,15 +283,13 @@ async def handle_vote2(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # 公布身份与重启按钮
 async def reveal_result(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
-    msg = "🎯 本局词语：
-"
-    msg += f"▪️ 平民词：{game_state['word_pair'][0]}
-"
-    msg += f"▪️ 卧底词：{game_state['word_pair'][1]}
+    msg = (
+        f"🎯 本局词语：\n"
+        f"▪️ 平民词：{game_state['word_pair'][0]}\n"
+        f"▪️ 卧底词：{game_state['word_pair'][1]}\n\n"
+        f"👥 玩家身份：\n"
+    )
 
-"
-    msg += "👥 玩家身份：
-"
     for uid in game_state["players"]:
         role = "卧底" if uid == game_state["undercover"] else "白板" if uid == game_state["whiteboard"] else "平民"
         name = context.bot_data.get(uid, {}).get("name", str(uid))
