@@ -3,7 +3,7 @@ import random
 import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CallbackQueryHandler, MessageHandler, filters
-from werewolf import (
+from werewolf_bot import (
     entry_werewolf,
     set_werewolf_mode,
     join_werewolf,
