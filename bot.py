@@ -7,8 +7,11 @@ from werewolf import (
     entry_game,
     set_mode,
     join_game,
-    view_word
-)
+    view_word,
+    handle_vote,   
+    handle_vote2,  
+    start_game_restart
+    )
 
 # 全局游戏状态
 group_mode = {}     # 每个群当前模式
