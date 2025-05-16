@@ -32,7 +32,12 @@ async def entry_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("群组中进行", callback_data="werewolf:mode:group")],
         [InlineKeyboardButton("现实世界进行", callback_data="werewolf:mode:real")]
     ]
-    await query.edit_message_text("请选择游戏模式：", reply_markup=InlineKeyboardMarkup(keyboard))
+    await context.bot.send_message(
+    chat_id=query.message.chat_id,
+    text="请选择游戏模式：",
+    reply_markup=InlineKeyboardMarkup(keyboard)
+)
+
 
 # 设置模式 + 开始报名
 async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
