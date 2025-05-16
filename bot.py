@@ -18,14 +18,15 @@ group_mode = {}     # 每个群当前模式
 group_data = {}     # 每个群当前游戏状态（炸弹数、扫雷状态、WenChi食物）
 
 # 图片链接（请替换为你自己的）
-MAIN_MENU_IMAGE = "https://i.imgur.com/4dwntl8.png"
-START_IMAGE_Bomb = "https://i.imgur.com/gFvwBy3.png"
-START_IMAGE_WenChi = "https://i.imgur.com/UjqvBCU.png"
-START_IMAGE_JiuGui = "https://i.imgur.com/kms13rs.png"
-BOMB_IMAGE = "https://i.imgur.com/uMwL0Du.png"
-WENCHI_BOMB_IMAGE = "https://i.imgur.com/MtLkHEC.png"
+MAIN_MENU_IMAGE = "https://i.imgur.com/ImNHwGk.jpeg"
+START_IMAGE_Bomb = "https://i.imgur.com/wcRbnSG.jpeg"
+START_IMAGE_Bomb2 = "https://i.imgur.com/HdFmGiv.jpeg"
+START_IMAGE_WenChi = "https://i.imgur.com/67kUd8p.jpeg"
+START_IMAGE_JiuGui = "https://i.imgur.com/UG3dt2v.jpeg"
+BOMB_IMAGE = "https://i.imgur.com/ylIksPo.jpeg"
+WENCHI_BOMB_IMAGE = "https://i.imgur.com/Qb4KyvT.jpeg"
 VIDEO_JiuGui = "https://i.imgur.com/TQcVLSp.mp4"
-ENG_JiuGui = "https://i.imgur.com/K1O0KnR.png"
+ENG_JiuGui = "https://i.imgur.com/1my25Tb.jpeg"
 
 food_options = [
     "酱到流油的烤鸡翅", "香到爆的猪肉串", "辣哭你的麻辣烫", "泡菜盖顶火锅面", "满满起司的炸年糕",
@@ -82,7 +83,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     elif mode == "sweeper":
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb2, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
     elif mode == "bomb":
         keyboard = [[InlineKeyboardButton(f"{i} 💣", callback_data=f"bombs:{i}") for i in range(1, 4)]]
         await context.bot.send_message(chat_id=chat_id, text="请选择本局💣的数量‼越多越刺激‼", reply_markup=InlineKeyboardMarkup(keyboard))
@@ -119,7 +120,7 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif mode == "sweeper":
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb2, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
 
     elif mode == "wenchi":
         bad = random.randint(1, 10)
