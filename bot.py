@@ -321,7 +321,6 @@ async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
 async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    await query.message.delete()
     chat_id = query.message.chat.id
     user = query.from_user
     data = group_data.get(chat_id)
@@ -335,8 +334,10 @@ async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if players[current_index]["id"] != user.id:
         await query.answer("请等待轮到你再点击！", show_alert=True)
         return
-
-    await query.message.edit_reply_markup(reply_markup=None)
+    try:
+        await query.message.edit_reply_markup(reply_markup=None)
+    except:
+        pass
 
     task = random.choice(WHEEL_TASKS)
     await context.bot.send_message(chat_id=chat_id, text=f"🍻 @{user.full_name} 抽到任务：{task}")
