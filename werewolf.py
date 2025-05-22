@@ -1,4 +1,3 @@
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
@@ -20,7 +19,6 @@ game_state = {
 # 图片
 image_url = "https://i.imgur.com/3N5AG9P.jpeg"
 
-
 # 示例词库
 word_pairs = [
     ("沙发", "床"), ("苹果", "梨"), ("飞机", "火箭"),
@@ -37,16 +35,17 @@ async def entry_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("线下模式", callback_data="werewolf:mode:real")]
     ]
     await context.bot.send_message(
-    chat_id=query.message.chat_id,
-    text="请选择游戏模式：",
-    reply_markup=InlineKeyboardMarkup(keyboard)
-)
-
+        chat_id=query.message.chat_id,
+        text="请选择游戏模式：",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
 # 设置模式 + 开始报名
 async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    await query.message.delete()  # 删除模式选择按钮消息
+
     mode = query.data.split(":")[-1]
     game_state.update({
         "mode": mode,
@@ -59,13 +58,12 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "chat_id": query.message.chat_id
     })
     msg = await context.bot.send_photo(
-    chat_id=query.message.chat_id,
-    photo=image_url
-    text=f"📌 模式设定为：{mode} 模式\n请在 20 秒内点击下方按钮报名 👇",
-    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]])
+        chat_id=query.message.chat_id,
+        photo=image_url,
+        caption=f"📌 模式设定为：{mode} 模式\n请在 20 秒内点击下方按钮报名 👇",
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]])
     )
     game_state["join_msg_id"] = msg.message_id
-
     context.job_queue.run_once(end_registration, 20, data=query.message.chat_id)
 
 # 玩家点击参加
@@ -77,14 +75,12 @@ async def join_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if uid not in game_state["players"]:
         game_state["players"].append(uid)
         context.bot_data[uid] = {"name": uname}
-    keyboard = [[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]]
     count = len(game_state["players"])
     text = f"📌 当前已报名人数：{count} 人"
-
-    await context.bot.edit_message_text(
+    await context.bot.edit_message_caption(
         chat_id=query.message.chat_id,
         message_id=game_state.get("join_msg_id"),
-        text=text,
+        caption=text,
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]])
     )
 
@@ -129,30 +125,21 @@ async def end_registration(context: ContextTypes.DEFAULT_TYPE):
     await bot.send_message(chat_id, f"✅ 报名结束，当前玩家名单：\n{players_list}")
 
     btn = [[InlineKeyboardButton("点击查看我的词语", callback_data="werewolf:view")]]
-    await bot.send_message(
-    chat_id=chat_id,
-    text="🎮 游戏开始！请点击下方按钮查看你的词语 👇",
-    reply_markup=InlineKeyboardMarkup(btn)
-    )
+    await bot.send_message(chat_id, "🎮 游戏开始！请点击下方按钮查看你的词语 👇", reply_markup=InlineKeyboardMarkup(btn))
     await start_description_phase(chat_id, context)
 
 # 描述阶段
 async def start_description_phase(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     players = game_state["players"]
-    await bot.send_message(
-        chat_id,
-        "🗣 描述阶段开始！请每位玩家用一句话描述你的词语。\n⚠️ 请真实描述，不可说谎。"
-    )
+    await bot.send_message(chat_id, "🗣 描述阶段开始！请每位玩家用一句话描述你的词语。\n⚠️ 请真实描述，不可说谎。")
     for uid in players:
         uname = context.bot_data.get(uid, {}).get("name", f"玩家({uid})")
-        await bot.send_message(
-            chat_id,
-            f"🎤 <a href='tg://user?id={uid}'>{uname}</a>，请在 20 秒内发言。",
-            parse_mode=ParseMode.HTML
-        )
-    
+        await bot.send_message(chat_id, f"🎤 <a href='tg://user?id={uid}'>{uname}</a>，请在 20 秒内发言。", parse_mode=ParseMode.HTML)
     await bot.send_message(chat_id, "✅ 所有玩家已描述完毕，下一阶段即将开始...")
+
+# ...（其余投票、胜负判断、restart 等保留不变）...
+
 
 # 导出函数供 bot.py 使用
 __all__ = [
