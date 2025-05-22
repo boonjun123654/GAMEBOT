@@ -30,15 +30,9 @@ word_pairs = [
 async def entry_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    keyboard = [
-        [InlineKeyboardButton("线上模式", callback_data="werewolf:mode:group")],
-        [InlineKeyboardButton("线下模式", callback_data="werewolf:mode:real")]
-    ]
-    await context.bot.send_message(
-        chat_id=query.message.chat_id,
-        text="请选择游戏模式：",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
+    await query.message.delete()  # 删除原按钮
+    await set_mode_direct(update, context)  # 直接进入报名
+
 
 # 设置模式 + 开始报名
 async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -46,7 +40,7 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     await query.message.delete()  # 删除模式选择按钮消息
 
-    mode = query.data.split(":")[-1]
+    mode = "group"
     game_state.update({
         "mode": mode,
         "players": [],
@@ -124,6 +118,7 @@ async def end_registration(context: ContextTypes.DEFAULT_TYPE):
     players_list = "\n".join([f"{i+1}. {name}" for i, name in enumerate(names)])
     await bot.send_message(chat_id, f"✅ 报名结束，当前玩家名单：\n{players_list}")
 
+    await asyncio.sleep(3)
     btn = [[InlineKeyboardButton("点击查看我的词语", callback_data="werewolf:view")]]
     await bot.send_message(chat_id, "🎮 游戏开始！请点击下方按钮查看你的词语 👇", reply_markup=InlineKeyboardMarkup(btn))
     await start_description_phase(chat_id, context)
@@ -132,13 +127,10 @@ async def end_registration(context: ContextTypes.DEFAULT_TYPE):
 async def start_description_phase(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     players = game_state["players"]
-    await bot.send_message(chat_id, "🗣 描述阶段开始！请每位玩家用一句话描述你的词语。\n⚠️ 请真实描述，不可说谎。")
-    for uid in players:
-        uname = context.bot_data.get(uid, {}).get("name", f"玩家({uid})")
-        await bot.send_message(chat_id, f"🎤 <a href='tg://user?id={uid}'>{uname}</a>，请在 20 秒内发言。", parse_mode=ParseMode.HTML)
-    await bot.send_message(chat_id, "✅ 所有玩家已描述完毕，下一阶段即将开始...")
+    await asyncio.sleep(5)
+    await bot.send_message(chat_id, "🗣 描述阶段开始！请每位玩家按照顺序描述你的词语。\n\n⚠️ 请真实描述，不可说谎。倒计时60秒")
 
-# ...（其余投票、胜负判断、restart 等保留不变）...
+    context.job_queue.run_once(start_vote_phase, 60, data=chat_id)
 
 
 # 导出函数供 bot.py 使用
