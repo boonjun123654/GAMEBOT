@@ -354,7 +354,6 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_main_menu, pattern="^mainmenu$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
-    app.add_handler(CallbackQueryHandler(set_mode, pattern="^werewolf:mode:"))
     app.add_handler(CallbackQueryHandler(entry_game, pattern="^game_werewolf$"))
     app.add_handler(CallbackQueryHandler(join_game, pattern="^werewolf:join$"))
     app.add_handler(CallbackQueryHandler(view_word, pattern="^werewolf:view$"))
