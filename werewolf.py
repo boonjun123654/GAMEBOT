@@ -94,7 +94,7 @@ async def end_registration(context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     players = game_state["players"]
 
-    if len(players) < 3:
+    if len(players) < 2:
         await bot.send_message(chat_id, "❌ 人数不足，游戏取消。")
         game_state["status"] = "idle"
         return
