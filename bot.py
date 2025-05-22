@@ -21,23 +21,10 @@ group_data = {}     # 每个群当前游戏状态（炸弹数、扫雷状态、W
 MAIN_MENU_IMAGE = "https://i.imgur.com/ImNHwGk.jpeg"
 START_IMAGE_Bomb = "https://i.imgur.com/wcRbnSG.jpeg"
 START_IMAGE_Bomb2 = "https://i.imgur.com/HdFmGiv.jpeg"
-START_IMAGE_WenChi = "https://i.imgur.com/67kUd8p.jpeg"
 START_IMAGE_JiuGui = "https://i.imgur.com/UG3dt2v.jpeg"
 BOMB_IMAGE = "https://i.imgur.com/ylIksPo.jpeg"
-WENCHI_BOMB_IMAGE = "https://i.imgur.com/Qb4KyvT.jpeg"
 VIDEO_JiuGui = "https://i.imgur.com/TQcVLSp.mp4"
 ENG_JiuGui = "https://i.imgur.com/1my25Tb.jpeg"
-
-food_options = [
-    "酱到流油的烤鸡翅", "香到爆的猪肉串", "辣哭你的麻辣烫", "泡菜盖顶火锅面", "满满起司的炸年糕",
-    "咬一口喷香烧肉饭", "一口爆汁的小笼包", "蘸满酱的泰式炸虾", "芝士狂魔披萨片", "三秒吞完的寿司卷"
-]
-
-def get_food_keyboard():
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(f, callback_data=f"wenchi:{i+1}")]
-        for i, f in enumerate(food_options)
-    ])
 
 
 def get_bomb_keyboard():
@@ -54,7 +41,6 @@ async def send_main_menu(chat_id, context):
     keyboard = [
         [InlineKeyboardButton("💣 数字炸弹", callback_data="mode:bomb")],
         [InlineKeyboardButton("💥 数字扫雷", callback_data="mode:sweeper")],
-        [InlineKeyboardButton("😋 WenChi 今天吃什么？", callback_data="mode:wenchi")],
         [InlineKeyboardButton("🤤 酒鬼轮盘", callback_data="mode:wheel")],
         [InlineKeyboardButton("谁是卧底", callback_data="game_werewolf")]
 ]
@@ -75,13 +61,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
     mode = query.data.split(":")[1]
     chat_id = query.message.chat.id
     group_mode[chat_id] = mode
-    if mode == "wenchi":
-        bad = random.randint(1, 10)
-        group_data[chat_id] = {"bad": bad, "selected": set()}
-
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_WenChi, caption="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
-
-    elif mode == "sweeper":
+    if mode == "sweeper":
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
         await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb2, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
     elif mode == "bomb":
@@ -89,7 +69,7 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await context.bot.send_message(chat_id=chat_id, text="请选择本局💣的数量‼越多越刺激‼", reply_markup=InlineKeyboardMarkup(keyboard))
 
     elif mode == "wheel":
-        msg = await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时60秒\n\n点击「🍺 我要参加」一起玩！",
+        msg = await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时20秒\n\n点击「🍺 我要参加」一起玩！",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
             ])
@@ -99,10 +79,10 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 
-        # 🕒 启动 60 秒倒计时任务
+        # 🕒 启动 20 秒倒计时任务
         context.application.job_queue.run_once(
             start_wheel_game,
-            when=60,
+            when=20,
             data={'chat_id': chat_id}
         )
 
@@ -122,21 +102,16 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
         await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb2, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
 
-    elif mode == "wenchi":
-        bad = random.randint(1, 10)
-        group_data[chat_id] = {"bad": bad, "selected": set()}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_WenChi, caption="😋 WenChi 今天吃什么？请选择：", reply_markup=get_food_keyboard())
-
     elif mode == "wheel":
         group_data[chat_id] = {"players": [], "state": "waiting"}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时60秒\n\n点击「🍺 我要参加」一起玩！",
+        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时20秒\n\n点击「🍺 我要参加」一起玩！",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
             ])
         )
         context.application.job_queue.run_once(
             start_wheel_game,
-            when=60,
+            when=20,
             data={'chat_id': chat_id}
         )
 
@@ -375,7 +350,6 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_mode_select, pattern="^mode:"))
     app.add_handler(CallbackQueryHandler(handle_bomb_count, pattern="^bombs:"))
     app.add_handler(CallbackQueryHandler(handle_guess, pattern="^guess:"))
-    app.add_handler(CallbackQueryHandler(handle_wenchi_guess, pattern="^wenchi:"))
     app.add_handler(CallbackQueryHandler(handle_restart, pattern="^restart$"))
     app.add_handler(CallbackQueryHandler(handle_main_menu, pattern="^mainmenu$"))
     app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
