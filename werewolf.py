@@ -33,8 +33,8 @@ async def entry_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     keyboard = [
-        [InlineKeyboardButton("线上群组玩", callback_data="werewolf:mode:group")],
-        [InlineKeyboardButton("线下面对面玩", callback_data="werewolf:mode:real")]
+        [InlineKeyboardButton("线上模式", callback_data="werewolf:mode:group")],
+        [InlineKeyboardButton("线下模式", callback_data="werewolf:mode:real")]
     ]
     await context.bot.send_message(
     chat_id=query.message.chat_id,
@@ -58,13 +58,13 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "status": "registering",
         "chat_id": query.message.chat_id
     })
-    msg = await context.bot.send_message(
+    msg = await context.bot.send_photo(
     chat_id=query.message.chat_id,
+    photo=image_url
     text=f"📌 模式设定为：{mode} 模式\n请在 20 秒内点击下方按钮报名 👇",
     reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]])
     )
     game_state["join_msg_id"] = msg.message_id
-
 
     context.job_queue.run_once(end_registration, 20, data=query.message.chat_id)
 
