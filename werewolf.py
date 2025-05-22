@@ -58,13 +58,13 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "status": "registering",
         "chat_id": query.message.chat_id
     })
-    keyboard = [[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]]
-    await context.bot.send_photo(
+    msg = await context.bot.send_message(
     chat_id=query.message.chat_id,
-    photo=image_url,
-    caption=f"🕹 模式设定为：{mode}！\n请在 20 秒内点击下方按钮报名：",
-    reply_markup=InlineKeyboardMarkup(keyboard)
+    text=f"📌 模式设定为：{mode} 模式\n请在 20 秒内点击下方按钮报名 👇",
+    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]])
     )
+    game_state["join_msg_id"] = msg.message_id
+
 
     context.job_queue.run_once(end_registration, 20, data=query.message.chat_id)
 
@@ -78,9 +78,14 @@ async def join_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
         game_state["players"].append(uid)
         context.bot_data[uid] = {"name": uname}
     keyboard = [[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]]
-    await query.edit_message_text(
-        f"当前已报名人数：{len(game_state['players'])}\\n点击继续加入（剩余时间内）",
-        reply_markup=InlineKeyboardMarkup(keyboard)
+    count = len(game_state["players"])
+    text = f"📌 当前已报名人数：{count} 人"
+
+    await context.bot.edit_message_text(
+        chat_id=query.message.chat_id,
+        message_id=game_state.get("join_msg_id"),
+        text=text,
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]])
     )
 
 # 查看词语按钮
@@ -336,5 +341,5 @@ async def start_game_restart(update: Update, context: ContextTypes.DEFAULT_TYPE)
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-    context.job_queue.run_once(end_registration, 60, data=chat_id)
+    context.job_queue.run_once(end_registration, 20, data=chat_id)
 
