@@ -40,7 +40,6 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     await query.message.delete()  # 删除模式选择按钮消息
 
-    mode = "group"
     game_state.update({
         "mode": mode,
         "players": [],
