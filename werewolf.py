@@ -30,8 +30,8 @@ word_pairs = [
 async def entry_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    await query.message.delete()  # 删除原按钮
-    await set_mode_direct(update, context)  # 直接进入报名
+    await query.message.delete()
+    await set_mode(update, context)  # ✅ 使用已定义的函数
 
 
 # 设置模式 + 开始报名
