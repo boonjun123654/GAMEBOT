@@ -17,6 +17,10 @@ game_state = {
     "chat_id": None
 }
 
+# 图片
+image_url = "https://i.imgur.com/3N5AG9P.jpeg"
+
+
 # 示例词库
 word_pairs = [
     ("沙发", "床"), ("苹果", "梨"), ("飞机", "火箭"),
@@ -29,8 +33,8 @@ async def entry_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     keyboard = [
-        [InlineKeyboardButton("群组中进行", callback_data="werewolf:mode:group")],
-        [InlineKeyboardButton("现实世界进行", callback_data="werewolf:mode:real")]
+        [InlineKeyboardButton("线上群组玩", callback_data="werewolf:mode:group")],
+        [InlineKeyboardButton("线下面对面玩", callback_data="werewolf:mode:real")]
     ]
     await context.bot.send_message(
     chat_id=query.message.chat_id,
@@ -55,12 +59,14 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "chat_id": query.message.chat_id
     })
     keyboard = [[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]]
-    await query.edit_message_text(
-    f"🕹 模式已设定为：{mode}\n请在 60 秒内点击下方按钮报名：",
+    await context.bot.send_photo(
+    chat_id=query.message.chat_id,
+    photo=image_url,
+    caption=f"🕹 模式设定为：{mode}！\n请在 20 秒内点击下方按钮报名：",
     reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-    context.job_queue.run_once(end_registration, 60, data=query.message.chat_id)
+    context.job_queue.run_once(end_registration, 20, data=query.message.chat_id)
 
 # 玩家点击参加
 async def join_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -93,7 +99,7 @@ async def end_registration(context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     players = game_state["players"]
 
-    if len(players) < 4:
+    if len(players) < 3:
         await bot.send_message(chat_id, "❌ 人数不足，游戏取消。")
         game_state["status"] = "idle"
         return
@@ -113,13 +119,16 @@ async def end_registration(context: ContextTypes.DEFAULT_TYPE):
         else:
             game_state["player_words"][uid] = pair[0]
 
-    for uid in players:
-        word = game_state["player_words"][uid]
-        await bot.send_message(uid, f"你获得的词语是：{'（空白）' if word == '' else word}")
-        btn = [[InlineKeyboardButton("查看我的词语", callback_data="werewolf:view")]]
-        await bot.send_message(uid, "如需再次查看，请点击：", reply_markup=InlineKeyboardMarkup(btn))
+    names = [context.bot_data.get(uid, {}).get("name", f"玩家({uid})") for uid in players]
+    players_list = "\n".join([f"{i+1}. {name}" for i, name in enumerate(names)])
+    await bot.send_message(chat_id, f"✅ 报名结束，当前玩家名单：\n{players_list}")
 
-    await bot.send_message(chat_id, "🎮 游戏开始！词语已发出，请准备描述。")
+    btn = [[InlineKeyboardButton("点击查看我的词语", callback_data="werewolf:view")]]
+    await bot.send_message(
+    chat_id=chat_id,
+    text="🎮 游戏开始！请点击下方按钮查看你的词语 👇",
+    reply_markup=InlineKeyboardMarkup(btn)
+    )
     await start_description_phase(chat_id, context)
 
 # 描述阶段
@@ -134,13 +143,10 @@ async def start_description_phase(chat_id: int, context: ContextTypes.DEFAULT_TY
         uname = context.bot_data.get(uid, {}).get("name", f"玩家({uid})")
         await bot.send_message(
             chat_id,
-            f"🎤 <a href='tg://user?id={uid}'>{uname}</a>，请在 30 秒内发言。",
+            f"🎤 <a href='tg://user?id={uid}'>{uname}</a>，请在 20 秒内发言。",
             parse_mode=ParseMode.HTML
         )
-        await asyncio.sleep(20)
-        await bot.send_message(chat_id, f"⏳ {uname} 剩下 10 秒！")
-        await asyncio.sleep(10)
-
+    
     await bot.send_message(chat_id, "✅ 所有玩家已描述完毕，下一阶段即将开始...")
 
 # 导出函数供 bot.py 使用
