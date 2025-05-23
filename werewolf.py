@@ -26,17 +26,10 @@ word_pairs = [
 ]
 
 # 游戏入口：选择模式
-async def entry_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    await query.message.delete()
-    await set_mode(update, context)  # ✅ 使用已定义的函数
-
-
-# 设置模式 + 开始报名
 async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+
     try:
         await query.message.delete()
     except:
@@ -53,19 +46,26 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "status": "registering",
         "chat_id": query.message.chat_id
     })
-    msg = await context.bot.send_photo(
-        chat_id=query.message.chat_id,
-        photo=WolfStart,
-        caption=f"📌 模式设定为：{mode} 模式\n请在 20 秒内点击下方按钮报名 👇",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]])
-    )
-    await context.bot.send_message(chat_id=query.message.chat_id, text="✅ 图片已成功发送")
+
+    WolfStart = "https://i.imgur.com/VSpL0M6.jpeg"
+
+    try:
+        msg = await context.bot.send_photo(
+            chat_id=query.message.chat_id,
+            photo=WolfStart,
+            caption="📢 模式设定为：群组模式\n请在 20 秒内点击下方按钮报名 👇",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("我要参加", callback_data="werewolf:join")]
+            ])
+        )
+        await context.bot.send_message(chat_id=query.message.chat_id, text="✅ 图片已成功发送")
         game_state["join_msg_id"] = msg.message_id
     except Exception as e:
-    await context.bot.send_message(chat_id=query.message.chat_id, text=f"❗ 图片发送失败：{e}")
+        await context.bot.send_message(chat_id=query.message.chat_id, text=f"❗ 图片发送失败：{e}")
         return
 
     context.job_queue.run_once(end_registration, 20, data=query.message.chat_id)
+
 
 # 玩家点击参加
 async def join_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
