@@ -3,6 +3,7 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 import asyncio
 import random
+from collections import Counter
 
 # 游戏状态
 game_state = {
