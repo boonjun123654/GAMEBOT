@@ -41,7 +41,6 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.message.delete()  # 删除模式选择按钮消息
 
     game_state.update({
-        "mode": mode,
         "players": [],
         "player_words": {},
         "undercover": None,
