@@ -38,7 +38,10 @@ async def entry_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    await query.message.delete()  # 删除模式选择按钮消息
+    try:
+        await query.message.delete()
+    except:
+        pass
 
     game_state.update({
         "players": [],
