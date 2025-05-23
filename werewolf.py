@@ -1284,7 +1284,9 @@ async def second_round(chat_id: int, context: ContextTypes.DEFAULT_TYPE, tied_pl
     for uid in tied_players:
         uname = context.bot_data.get(uid, {}).get("name", str(uid))
         keyboard.append([InlineKeyboardButton(uname, callback_data=f"werewolf:vote2:{uid}")])
-    await bot.send_message(chat_id, "🔁 第二轮投票开始！", reply_markup=InlineKeyboardMarkup(keyboard))
+    msg = await bot.send_message(chat_id, "🔁 第二轮投票开始！", reply_markup=InlineKeyboardMarkup(keyboard))
+    context._chat_data[chat_id]["vote_msg_id"] = msg.message_id
+
 
 # 第二轮投票逻辑
 async def handle_vote2(update: Update, context: ContextTypes.DEFAULT_TYPE):
