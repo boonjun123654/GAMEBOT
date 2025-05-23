@@ -155,7 +155,7 @@ votes = {}            # uid: voted_uid
 eliminated = set()    # 被淘汰玩家
 
 # 启动投票阶段
-async def start_vote_phase(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
+async def start_vote_phase(context: ContextTypes.DEFAULT_TYPE):
     chat_id = context.job.data
     bot = context.bot
     votes.clear()
