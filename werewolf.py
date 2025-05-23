@@ -16,7 +16,6 @@ game_state = {
     "chat_id": None
 }
 
-# 图片
 WolfStart = "https://i.imgur.com/VSpL0M6.jpeg"
 
 # 示例词库
