@@ -53,17 +53,17 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "status": "registering",
         "chat_id": query.message.chat_id
     })
-        msg = await context.bot.send_photo(
+    msg = await context.bot.send_photo(
         chat_id=query.message.chat_id,
         photo=WolfStart,
         caption=f"📌 模式设定为：{mode} 模式\n请在 20 秒内点击下方按钮报名 👇",
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]])
     )
-        await context.bot.send_message(chat_id=query.message.chat_id, text="✅ 图片已成功发送")
+    await context.bot.send_message(chat_id=query.message.chat_id, text="✅ 图片已成功发送")
         game_state["join_msg_id"] = msg.message_id
     except Exception as e:
-        await context.bot.send_message(chat_id=query.message.chat_id, text=f"❗ 图片发送失败：{e}")
-            return
+    await context.bot.send_message(chat_id=query.message.chat_id, text=f"❗ 图片发送失败：{e}")
+        return
 
     context.job_queue.run_once(end_registration, 20, data=query.message.chat_id)
 
