@@ -53,7 +53,7 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "status": "registering",
         "chat_id": query.message.chat_id
     })
-    msg = await context.bot.send_photo(
+        msg = await context.bot.send_photo(
         chat_id=query.message.chat_id,
         photo=WolfStart,
         caption=f"📌 模式设定为：{mode} 模式\n请在 20 秒内点击下方按钮报名 👇",
