@@ -156,6 +156,7 @@ eliminated = set()    # 被淘汰玩家
 
 # 启动投票阶段
 async def start_vote_phase(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = context.job.data
     bot = context.bot
     votes.clear()
     await bot.send_message(chat_id, "🗳 投票时间到！请点选你认为是卧底的玩家👇")
