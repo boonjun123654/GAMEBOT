@@ -137,10 +137,10 @@ async def start_description_phase(chat_id: int, context: ContextTypes.DEFAULT_TY
 
 # 导出函数供 bot.py 使用
 __all__ = [
-    "entry_game",
     "set_mode",
     "join_game",
     "view_word",
+    "end_registration",
     "start_description_phase",
     "start_vote_phase",
     "handle_vote",
