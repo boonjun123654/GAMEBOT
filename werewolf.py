@@ -205,9 +205,22 @@ async def count_votes_and_check(chat_id: int, context: ContextTypes.DEFAULT_TYPE
     top = [uid for uid, v in count.items() if v == max_votes]
 
     if len(top) > 1:
-        await bot.send_message(chat_id, "⚠️ 出现平票！进入第二轮仅限平票玩家描述")
-        await second_round(chat_id, context, top)
-        return
+    names = []
+    for uid in top:
+        uname = context.bot_data.get(uid, {}).get("name", str(uid))
+        names.append(f"<a href='tg://user?id={uid}'>{uname}</a>")
+    name_text = "、".join(names)
+
+    await bot.send_message(
+        chat_id,
+        f"⚠️ 出现平票情况！\n请 {name_text} 发言~\n🕒 发言时间：20 秒",
+        parse_mode=ParseMode.HTML
+    )
+
+    await asyncio.sleep(20)
+    await second_round(chat_id, context, top)
+    return
+
 
     # 淘汰玩家
     eliminated_uid = top[0]
@@ -233,24 +246,7 @@ async def count_votes_and_check(chat_id: int, context: ContextTypes.DEFAULT_TYPE
 # 第二轮描述 + 投票（平票处理）
 async def second_round(chat_id: int, context: ContextTypes.DEFAULT_TYPE, tied_players: list):
     bot = context.bot
-    await bot.send_message(chat_id, "🎤 平票玩家开始 10 秒发言时间...")
-
-    names = []
-    for uid in tied_players:
-        uname = context.bot_data.get(uid, {}).get("name", str(uid))
-        names.append(f"<a href='tg://user?id={uid}'>{uname}</a>")
-
-    name_text = "、".join(names)
-
-    await bot.send_message(
-        chat_id,
-        f"⚠️ 出现平票情况！\n请 {name_text} 发言~\n🕒 发言时间：20 秒",
-        parse_mode=ParseMode.HTML
-    )
-
-    await asyncio.sleep(20)
-
-
+  
     # 二轮投票
     global votes
     votes.clear()
@@ -263,35 +259,67 @@ async def second_round(chat_id: int, context: ContextTypes.DEFAULT_TYPE, tied_pl
 # 第二轮投票逻辑
 async def handle_vote2(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    voter = query.from_user.id
+    uid = query.from_user.id
+    voter_name = context.bot_data.get(uid, {}).get("name", str(uid))
+    chat_id = query.message.chat.id
+
+    if uid in votes:
+        await query.answer("你已经投过票了", show_alert=True)
+        return
+
+    # 记录投票
     voted_uid = int(query.data.split(":")[-1])
+    votes[uid] = voted_uid
 
-    if voter not in game_state["players"] or voter in eliminated:
-        await query.answer("你已被淘汰，无法投票！", show_alert=True)
+    await query.answer()
+    await context.bot.send_message(chat_id, f"📩 {voter_name} 已投票")
+
+    # 如果所有剩余玩家都投票了，就结算
+    active_players = [uid for uid in game_state["players"] if uid not in eliminated]
+    if len(votes) < len(active_players):
         return
-    if voter in votes:
-        await query.answer("你已投过票了！", show_alert=True)
-        return
 
-    votes[voter] = voted_uid
-    await query.answer("✅ 投票成功！", show_alert=True)
+    # 统计票数
+    vote_counts = Counter(votes.values())
+    max_votes = max(vote_counts.values())
+    top = [uid for uid, count in vote_counts.items() if count == max_votes]
 
-    tied_players = [uid for uid in votes.values()]
-    if len(votes) == len([uid for uid in game_state["players"] if uid not in eliminated]):
-        # 判断是否再次平票
-        result = {}
-        for uid in votes.values():
-            result[uid] = result.get(uid, 0) + 1
-        top = [uid for uid, v in result.items() if v == max(result.values())]
-        if len(top) > 1:
-            for uid in top:
-                eliminated.add(uid)
-            await context.bot.send_message(query.message.chat.id, "⚔️ 第二轮仍平票，平票玩家全部淘汰！")
+    # ✅ 情况 1：第二轮仍平票（多人同票）→ 全部淘汰
+    if len(top) > 1:
+        for uid in top:
+            eliminated.add(uid)
+        await context.bot.send_message(chat_id, "⚔️ 第二轮仍平票，平票玩家全部淘汰！")
+
+        # 判断游戏是否结束
+        if game_state["undercover"] in top:
+            await context.bot.send_message(chat_id, "🎉 卧底被淘汰，平民胜利！")
         else:
-            eliminated.add(top[0])
-            uname = context.bot_data.get(top[0], {}).get("name", str(top[0]))
-            await context.bot.send_message(query.message.chat.id, f"🪦 玩家 {uname} 被淘汰！")
-        await start_description_phase(query.message.chat.id, context)
+            await context.bot.send_message(chat_id, "😈 卧底仍在场，卧底胜利！")
+
+        await reveal_result(chat_id, context)
+        return
+
+    # ✅ 情况 2：投票成功淘汰一人
+    target = top[0]
+    eliminated.add(target)
+    target_name = context.bot_data.get(target, {}).get("name", str(target))
+    await context.bot.send_message(chat_id, f"🚫 玩家 {target_name} 被淘汰")
+
+    # 判断游戏是否结束
+    if game_state["undercover"] == target:
+        await context.bot.send_message(chat_id, "🎉 卧底被淘汰，平民胜利！")
+        await reveal_result(chat_id, context)
+        return
+
+    survivors = [uid for uid in game_state["players"] if uid not in eliminated]
+    if len(survivors) <= 2 and game_state["undercover"] in survivors:
+        await context.bot.send_message(chat_id, "😈 卧底潜伏成功，卧底胜利！")
+        await reveal_result(chat_id, context)
+        return
+
+    # 否则继续游戏
+    await context.bot.send_message(chat_id, "✅ 游戏继续，进入下一轮描述阶段")
+    await start_description_phase(chat_id, context)
 
 # 公布身份与重启按钮
 async def reveal_result(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
