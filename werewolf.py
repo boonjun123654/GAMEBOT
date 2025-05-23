@@ -1172,9 +1172,7 @@ async def start_vote_phase(context: ContextTypes.DEFAULT_TYPE):
     chat_id = context.job.data
     bot = context.bot
     votes.clear()
-    await bot.send_message(chat_id, "🗳 投票时间到！请点选你认为是卧底的玩家👇")
-
-    # 投票按钮（仅限未淘汰玩家）
+    
     keyboard = []
     for uid in game_state["players"]:
         if uid in eliminated:
@@ -1182,7 +1180,13 @@ async def start_vote_phase(context: ContextTypes.DEFAULT_TYPE):
         uname = context.bot_data.get(uid, {}).get("name", str(uid))
         keyboard.append([InlineKeyboardButton(uname, callback_data=f"werewolf:vote:{uid}")])
 
-    await bot.send_message(chat_id, "请点击以下玩家名字投票：", reply_markup=InlineKeyboardMarkup(keyboard))
+    msg = await bot.send_message(
+        chat_id,
+        "📤 投票时间到！请选择你认为是卧底的玩家 👇\n\n请点击以下玩家名字投票：",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+    context._chat_data[chat_id]["vote_msg_id"] = msg.message_id
 
 # 接收投票操作
 async def handle_vote(update: Update, context: ContextTypes.DEFAULT_TYPE):
