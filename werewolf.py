@@ -205,21 +205,21 @@ async def count_votes_and_check(chat_id: int, context: ContextTypes.DEFAULT_TYPE
     top = [uid for uid, v in count.items() if v == max_votes]
 
     if len(top) > 1:
-    names = []
-    for uid in top:
-        uname = context.bot_data.get(uid, {}).get("name", str(uid))
-        names.append(f"<a href='tg://user?id={uid}'>{uname}</a>")
-    name_text = "、".join(names)
+        names = []
+        for uid in top:
+            uname = context.bot_data.get(uid, {}).get("name", str(uid))
+            names.append(f"<a href='tg://user?id={uid}'>{uname}</a>")
+        name_text = "、".join(names)
 
-    await bot.send_message(
-        chat_id,
-        f"⚠️ 出现平票情况！\n请 {name_text} 发言~\n🕒 发言时间：20 秒",
-        parse_mode=ParseMode.HTML
-    )
+        await bot.send_message(
+            chat_id,
+            f"⚠️ 出现平票情况！\n请 {name_text} 发言~\n🕒 发言时间：20 秒",
+            parse_mode=ParseMode.HTML
+        )
 
-    await asyncio.sleep(20)
-    await second_round(chat_id, context, top)
-    return
+        await asyncio.sleep(20)
+        await second_round(chat_id, context, top)
+        return
 
 
     # 淘汰玩家
