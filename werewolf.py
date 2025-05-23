@@ -130,9 +130,9 @@ async def start_description_phase(chat_id: int, context: ContextTypes.DEFAULT_TY
     bot = context.bot
     players = game_state["players"]
     await asyncio.sleep(5)
-    await bot.send_message(chat_id, "🗣 描述阶段开始！请每位玩家按照顺序描述你的词语。\n\n⚠️ 请真实描述，不可说谎。倒计时60秒")
+    await bot.send_message(chat_id, "🗣 描述阶段开始！请每位玩家按照顺序描述你的词语。\n\n⚠️ 请真实描述，不可说谎。倒计时30秒")
 
-    context.job_queue.run_once(start_vote_phase, 60, data=chat_id)
+    context.job_queue.run_once(start_vote_phase, 30, data=chat_id)
 
 
 # 导出函数供 bot.py 使用
