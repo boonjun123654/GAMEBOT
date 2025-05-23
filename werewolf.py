@@ -36,6 +36,9 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except:
         pass
 
+    votes.clear()
+    eliminated.clear()
+
     game_state.update({
         "players": [],
         "player_words": {},
