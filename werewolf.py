@@ -233,14 +233,23 @@ async def count_votes_and_check(chat_id: int, context: ContextTypes.DEFAULT_TYPE
 # 第二轮描述 + 投票（平票处理）
 async def second_round(chat_id: int, context: ContextTypes.DEFAULT_TYPE, tied_players: list):
     bot = context.bot
-    await bot.send_message(chat_id, "🎤 平票玩家开始 30 秒发言时间...")
+    await bot.send_message(chat_id, "🎤 平票玩家开始 10 秒发言时间...")
 
+    names = []
     for uid in tied_players:
         uname = context.bot_data.get(uid, {}).get("name", str(uid))
-        await bot.send_message(chat_id, f"请 <a href='tg://user?id={uid}'>{uname}</a> 发言", parse_mode=ParseMode.HTML)
-        await asyncio.sleep(20)
-        await bot.send_message(chat_id, f"{uname} 剩下 10 秒...")
-        await asyncio.sleep(10)
+        names.append(f"<a href='tg://user?id={uid}'>{uname}</a>")
+
+    name_text = "、".join(names)
+
+    await bot.send_message(
+        chat_id,
+        f"⚠️ 出现平票情况！\n请 {name_text} 发言~\n🕒 发言时间：20 秒",
+        parse_mode=ParseMode.HTML
+    )
+
+    await asyncio.sleep(20)
+
 
     # 二轮投票
     global votes
