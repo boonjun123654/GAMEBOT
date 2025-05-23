@@ -141,6 +141,12 @@ __all__ = [
     "set_mode",
     "join_game",
     "view_word",
+    "start_description_phase",
+    "start_vote_phase",
+    "handle_vote",
+    "handle_vote2",
+    "start_game_restart",
+    "reveal_result",
     "game_state"
 ]
 
