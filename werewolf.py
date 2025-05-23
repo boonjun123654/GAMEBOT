@@ -1099,6 +1099,16 @@ async def end_registration(context: ContextTypes.DEFAULT_TYPE):
     bot = context.bot
     players = game_state["players"]
 
+
+    try:
+        await context.bot.delete_message(
+            chat_id=chat_id,
+            message_id=game_state.get("join_msg_id")
+        )
+    except:
+        pass
+
+
     if len(players) < 2:
         await bot.send_message(chat_id, "❌ 人数不足，游戏取消。")
         game_state["status"] = "idle"
@@ -1204,11 +1214,15 @@ async def count_votes_and_check(chat_id: int, context: ContextTypes.DEFAULT_TYPE
     for uid in votes.values():
         count[uid] = count.get(uid, 0) + 1
 
-    await context.bot.edit_message_reply_markup(
-        chat_id=chat_id,
-        message_id=query.message.message_id,
-        reply_markup=None
-    )
+    try:
+        await context.bot.edit_message_reply_markup(
+            chat_id=chat_id,
+            message_id=context._chat_data[chat_id].get("vote_msg_id"),  # 确保你保存过按钮的 message_id
+            reply_markup=None
+        )
+    except:
+        pass
+
 
 
     max_votes = max(count.values())
