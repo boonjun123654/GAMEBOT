@@ -47,8 +47,6 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "chat_id": query.message.chat_id
     })
 
-    WolfStart = "https://i.imgur.com/VSpL0M6.jpeg"
-
     try:
         msg = await context.bot.send_photo(
             chat_id=query.message.chat_id,
