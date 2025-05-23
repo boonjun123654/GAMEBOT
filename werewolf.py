@@ -17,7 +17,7 @@ game_state = {
 }
 
 # 图片
-image_url = "https://i.imgur.com/3N5AG9P.jpeg"
+WolfStart = "https://i.imgur.com/VSpL0M6.jpeg"
 
 # 示例词库
 word_pairs = [
@@ -54,7 +54,7 @@ async def set_mode(update: Update, context: ContextTypes.DEFAULT_TYPE):
     })
     msg = await context.bot.send_photo(
         chat_id=query.message.chat_id,
-        photo=image_url,
+        photo=WolfStart,
         caption=f"📌 模式设定为：{mode} 模式\n请在 20 秒内点击下方按钮报名 👇",
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("我要参加", callback_data="werewolf:join")]])
     )
