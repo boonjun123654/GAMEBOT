@@ -263,34 +263,34 @@ async def handle_vote2(update: Update, context: ContextTypes.DEFAULT_TYPE):
     voter_name = context.bot_data.get(uid, {}).get("name", str(uid))
     chat_id = query.message.chat.id
 
+    # ✅ 防重复投票
     if uid in votes:
         await query.answer("你已经投过票了", show_alert=True)
         return
 
-    # 记录投票
+    # ✅ 记录投票
     voted_uid = int(query.data.split(":")[-1])
     votes[uid] = voted_uid
 
     await query.answer()
     await context.bot.send_message(chat_id, f"📩 {voter_name} 已投票")
 
-    # 如果所有剩余玩家都投票了，就结算
+    # ✅ 检查是否所有存活玩家都投完票
     active_players = [uid for uid in game_state["players"] if uid not in eliminated]
     if len(votes) < len(active_players):
-        return
+        return  # 等待其他人投票
 
-    # 统计票数
+    # ✅ 所有人已投票，开始统计
     vote_counts = Counter(votes.values())
     max_votes = max(vote_counts.values())
     top = [uid for uid, count in vote_counts.items() if count == max_votes]
 
-    # ✅ 情况 1：第二轮仍平票（多人同票）→ 全部淘汰
+    # ✅ 第二轮再次平票 → 全体平票者淘汰
     if len(top) > 1:
         for uid in top:
             eliminated.add(uid)
         await context.bot.send_message(chat_id, "⚔️ 第二轮仍平票，平票玩家全部淘汰！")
 
-        # 判断游戏是否结束
         if game_state["undercover"] in top:
             await context.bot.send_message(chat_id, "🎉 卧底被淘汰，平民胜利！")
         else:
@@ -299,14 +299,14 @@ async def handle_vote2(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await reveal_result(chat_id, context)
         return
 
-    # ✅ 情况 2：投票成功淘汰一人
+    # ✅ 正常淘汰票数最高的一人
     target = top[0]
     eliminated.add(target)
     target_name = context.bot_data.get(target, {}).get("name", str(target))
     await context.bot.send_message(chat_id, f"🚫 玩家 {target_name} 被淘汰")
 
-    # 判断游戏是否结束
-    if game_state["undercover"] == target:
+    # ✅ 判断胜负
+    if target == game_state["undercover"]:
         await context.bot.send_message(chat_id, "🎉 卧底被淘汰，平民胜利！")
         await reveal_result(chat_id, context)
         return
@@ -317,9 +317,10 @@ async def handle_vote2(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await reveal_result(chat_id, context)
         return
 
-    # 否则继续游戏
+    # ✅ 否则继续游戏
     await context.bot.send_message(chat_id, "✅ 游戏继续，进入下一轮描述阶段")
     await start_description_phase(chat_id, context)
+
 
 # 公布身份与重启按钮
 async def reveal_result(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
