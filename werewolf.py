@@ -1252,26 +1252,24 @@ async def count_votes_and_check(chat_id: int, context: ContextTypes.DEFAULT_TYPE
 
     # 淘汰玩家
     eliminated_uid = top[0]
-    game_state["eliminated"].add(eliminated_uid)
+    eliminated.add(eliminated_uid)
+    uname = context.bot_data.get(eliminated_uid, {}).get("name", str(eliminated_uid))
+    await bot.send_message(chat_id, f"🪦 玩家 {uname} 被淘汰！")
 
-    # 判断是否为游戏结束
-    is_undercover = eliminated_uid == game_state["undercover"]
-    is_whiteboard = eliminated_uid == game_state.get("whiteboard")
-    whiteboard_exists = game_state.get("whiteboard") is not None
-
-    # 游戏结束逻辑判断
-    if is_undercover and not (whiteboard_exists and not is_whiteboard):
-        # 卧底出局，白板已无影响（或没有白板）
-        await announce_elimination(eliminated_uid, chat_id, context, is_game_end=True)
-        return
-    elif is_whiteboard and not (whiteboard_exists and not is_undercover):
-        # 白板出局，卧底已无影响（或没有卧底）
-        await announce_elimination(eliminated_uid, chat_id, context, is_game_end=True)
-        return
+    # 胜负判断
+    if eliminated_uid == game_state["undercover"]:
+        await bot.send_message(chat_id, "🎉 卧底被票出，平民胜利！")
+        await reveal_result(chat_id, context)
+    elif eliminated_uid == game_state["whiteboard"]:
+        await bot.send_message(chat_id, "白板出局，游戏继续！")
+        await start_description_phase(chat_id, context)
     else:
-        # 游戏继续
-        await announce_elimination(eliminated_uid, chat_id, context, is_game_end=False)
-
+        survivors = [uid for uid in game_state["players"] if uid not in eliminated]
+        if len(survivors) <= 2 and game_state["undercover"] in survivors:
+            await bot.send_message(chat_id, "😈 卧底成功潜伏到最后，卧底胜利！")
+            await reveal_result(chat_id, context)
+        else:
+            await start_description_phase(chat_id, context)
 
 # 第二轮描述 + 投票（平票处理）
 async def second_round(chat_id: int, context: ContextTypes.DEFAULT_TYPE, tied_players: list):
@@ -1284,9 +1282,7 @@ async def second_round(chat_id: int, context: ContextTypes.DEFAULT_TYPE, tied_pl
     for uid in tied_players:
         uname = context.bot_data.get(uid, {}).get("name", str(uid))
         keyboard.append([InlineKeyboardButton(uname, callback_data=f"werewolf:vote2:{uid}")])
-    msg = await bot.send_message(chat_id, "🔁 第二轮投票开始！", reply_markup=InlineKeyboardMarkup(keyboard))
-    context._chat_data[chat_id]["vote_msg_id"] = msg.message_id
-
+    await bot.send_message(chat_id, "🔁 第二轮投票开始！", reply_markup=InlineKeyboardMarkup(keyboard))
 
 # 第二轮投票逻辑
 async def handle_vote2(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1328,36 +1324,37 @@ async def handle_vote2(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(top) > 1:
         for uid in top:
             eliminated.add(uid)
+        await context.bot.send_message(chat_id, "⚔️ 第二轮仍平票，平票玩家全部淘汰！")
 
-        await context.bot.send_message(chat_id, f"📛 第二轮仍平票，平票玩家全部淘汰！")
-
-        # 判断是否游戏结束
-        undercover = game_state["undercover"]
-        whiteboard = game_state.get("whiteboard")
-        has_undercover = undercover in top
-        has_whiteboard = whiteboard in top if whiteboard else False
-
-        # 游戏结束逻辑
-        if has_undercover and not has_whiteboard:
-            for uid in top:
-                await announce_elimination(uid, chat_id, context, is_game_end=True)
-            return
-        elif has_whiteboard and not has_undercover:
-            for uid in top:
-                await announce_elimination(uid, chat_id, context, is_game_end=True)
-            return
+        if game_state["undercover"] in top:
+            await context.bot.send_message(chat_id, "🎉 卧底被淘汰，平民胜利！")
         else:
-            for uid in top:
-                await announce_elimination(uid, chat_id, context, is_game_end=False)
-            return
+            await context.bot.send_message(chat_id, "😈 卧底仍在场，卧底胜利！")
 
+        await reveal_result(chat_id, context)
+        return
 
     # ✅ 正常淘汰票数最高的一人
     target = top[0]
     eliminated.add(target)
-    await announce_elimination(target, chat_id, context)
-    return
+    target_name = context.bot_data.get(target, {}).get("name", str(target))
+    await context.bot.send_message(chat_id, f"🚫 玩家 {target_name} 被淘汰")
 
+    # ✅ 判断胜负
+    if target == game_state["undercover"]:
+        await context.bot.send_message(chat_id, "🎉 卧底被淘汰，平民胜利！")
+        await reveal_result(chat_id, context)
+        return
+
+    survivors = [uid for uid in game_state["players"] if uid not in eliminated]
+    if len(survivors) <= 2 and game_state["undercover"] in survivors:
+        await context.bot.send_message(chat_id, "😈 卧底潜伏成功，卧底胜利！")
+        await reveal_result(chat_id, context)
+        return
+
+    # ✅ 否则继续游戏
+    await context.bot.send_message(chat_id, "✅ 游戏继续，进入下一轮描述阶段")
+    await start_description_phase(chat_id, context)
 
 
 # 公布身份与重启按钮
@@ -1379,24 +1376,6 @@ async def reveal_result(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔁 重新开始", callback_data="werewolf:restart")],
         [InlineKeyboardButton("🎮 切换游戏模式", callback_data="mainmenu")]
     ]))
-
-
-async def announce_elimination(uid, chat_id, context: ContextTypes.DEFAULT_TYPE, is_game_end=False):
-    if uid is None:
-        return
-
-    uname = context.bot_data.get(uid, {}).get("name", str(uid))
-    mention = f"<a href='tg://user?id={uid}'>{uname}</a>"
-
-    # 不公布身份，统一文案
-    if not is_game_end:
-        await context.bot.send_message(chat_id, f"{mention} 淘汰！游戏继续！", parse_mode=ParseMode.HTML)
-    else:
-        # 游戏结束：公布结果
-        await context.bot.send_message(chat_id, f"{mention} 淘汰！卧底被抓到了！", parse_mode=ParseMode.HTML)
-        await reveal_result(chat_id, context)
-
-
 
 async def start_game_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
