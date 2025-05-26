@@ -22,8 +22,6 @@ START_IMAGE_Bomb = "https://i.imgur.com/wcRbnSG.jpeg"
 START_IMAGE_Bomb2 = "https://i.imgur.com/HdFmGiv.jpeg"
 START_IMAGE_JiuGui = "https://i.imgur.com/UG3dt2v.jpeg"
 BOMB_IMAGE = "https://i.imgur.com/ylIksPo.jpeg"
-VIDEO_JiuGui = "https://i.imgur.com/TQcVLSp.mp4"
-ENG_JiuGui = "https://i.imgur.com/1my25Tb.jpeg"
 
 
 def get_bomb_keyboard():
@@ -40,7 +38,6 @@ async def send_main_menu(chat_id, context):
     keyboard = [
         [InlineKeyboardButton("💣 数字炸弹", callback_data="mode:bomb")],
         [InlineKeyboardButton("💥 数字扫雷", callback_data="mode:sweeper")],
-        [InlineKeyboardButton("🤤 酒鬼轮盘", callback_data="mode:wheel")],
         [InlineKeyboardButton("🕵️‍♂️ 谁是卧底", callback_data="game_werewolf")]
 ]
     await context.bot.send_photo(
@@ -67,23 +64,6 @@ async def handle_mode_select(update: Update, context: ContextTypes.DEFAULT_TYPE)
         keyboard = [[InlineKeyboardButton(f"{i} 💣", callback_data=f"bombs:{i}") for i in range(1, 4)]]
         await context.bot.send_message(chat_id=chat_id, text="请选择本局💣的数量‼越多越刺激‼", reply_markup=InlineKeyboardMarkup(keyboard))
 
-    elif mode == "wheel":
-        msg = await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时20秒\n\n点击「🍺 我要参加」一起玩！",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
-            ])
-        )
-        group_data.setdefault(chat_id, {"players": [], "state": "waiting"})
-        group_data[chat_id]["join_msg_id"] = msg.message_id
-
-
-
-        # 🕒 启动 20 秒倒计时任务
-        context.application.job_queue.run_once(
-            start_wheel_game,
-            when=20,
-            data={'chat_id': chat_id}
-        )
 
 async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -223,120 +203,6 @@ async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYP
         data["max"] = min(data["max"], guess - 1)
         await context.bot.send_message(chat_id=chat_id, text=f"太大了！当前范围：{data['min']} - {data['max']}")
 
-# ====== 🍻 酒鬼轮盘模块 ======
-
-import asyncio
-
-WHEEL_TASKS = [
-    "点名！选个人帮你喝！",
-    "干杯！全员一起喝！",
-    "倒满，自己干了！",
-    "拉个倒霉蛋来喝",
-    "剪刀石头布，输的喝！",
-    "喊 5/10/15，谁输谁喝！",
-    "指定人喝，不限人数！",
-    "恭喜你，不用喝！"
-]
-
-async def handle_wheel_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    chat_id = query.message.chat.id
-    user = query.from_user
-
-    if "players" not in group_data.get(chat_id, {}):
-        group_data[chat_id] = {"players": [], "state": "waiting", "current": 0}
-
-    players = group_data[chat_id]["players"]
-
-    if user.id not in [p["id"] for p in players]:
-        players.append({"id": user.id, "name": user.full_name})
-        await context.bot.send_message(chat_id=chat_id, text=f"{user.full_name} 已报名 📝")
-
-    if group_data[chat_id]["state"] == "waiting":
-        group_data[chat_id]["state"] = "counting"
-
-    else:
-        await query.answer("你已经报名了！", show_alert=True)
-
-
-async def start_wheel_game(context: ContextTypes.DEFAULT_TYPE):
-    chat_id = context.job.data['chat_id']
-    data = group_data.get(chat_id)
-    join_msg_id = data.get("join_msg_id")
-    if join_msg_id:
-        try:
-            await context.bot.edit_message_reply_markup(
-                chat_id=chat_id,
-                message_id=join_msg_id,
-                reply_markup=None
-            )
-        except:
-            pass
-    if not data or not data.get("players"):
-        await context.bot.send_message(chat_id, "❌ 没有玩家参与，游戏取消。")
-        group_data.pop(chat_id, None)
-        return
-
-    players = data["players"]
-    names = "\n".join(f"{i+1}. {p['name']}" for i, p in enumerate(players))
-    data["state"] = "playing"
-    data["current"] = 0
-
-    await context.bot.send_message(chat_id, f"🎉 报名结束！本轮玩家：\n{names}")
-
-    current = players[0]
-    await context.bot.send_video(
-        chat_id,video=VIDEO_JiuGui,
-        supports_streaming=True,
-        caption=f"🎯 @{current['name']} 请点击下方按钮旋转轮盘！",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]])
-    )
-
-async def handle_wheel_spin(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    chat_id = query.message.chat.id
-    user = query.from_user
-    data = group_data.get(chat_id)
-
-    if not data or data["state"] != "playing":
-        return
-
-    players = data["players"]
-    current_index = data["current"]
-
-    if players[current_index]["id"] != user.id:
-        await query.answer("请等待轮到你再点击！", show_alert=True)
-        return
-    await context.bot.delete_message(chat_id=chat_id, message_id=query.message.message_id)
-
-    task = random.choice(WHEEL_TASKS)
-    await context.bot.send_message(chat_id=chat_id, text=f"🍻 @{user.full_name} 抽到任务：{task}")
-
-    await asyncio.sleep(5)
-
-    data["current"] += 1
-    if data["current"] >= len(players):
-        await context.bot.send_photo(
-            chat_id=chat_id,
-            photo=ENG_JiuGui,
-            caption="🎊 本轮游戏结束，你醉了吗？",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔁 重新开始", callback_data="restart")],
-                [InlineKeyboardButton("🎮 切换游戏模式", callback_data="mainmenu")]
-            ])
-        )
-        group_data.pop(chat_id, None)
-    else:
-        next_player = players[data["current"]]
-        await context.bot.send_message(
-            chat_id=chat_id,
-            text=f"🎯 轮到 @{next_player['name']}，请点击旋转轮盘！",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🎡 旋转轮盘", callback_data="spin:wheel")]
-            ])
-        )
 
 if __name__ == "__main__":
 
@@ -351,8 +217,6 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_guess, pattern="^guess:"))
     app.add_handler(CallbackQueryHandler(handle_restart, pattern="^restart$"))
     app.add_handler(CallbackQueryHandler(handle_main_menu, pattern="^mainmenu$"))
-    app.add_handler(CallbackQueryHandler(handle_wheel_join, pattern="^join:wheel$"))
-    app.add_handler(CallbackQueryHandler(handle_wheel_spin, pattern="^spin:wheel$"))
     app.add_handler(CallbackQueryHandler(set_mode, pattern="^game_werewolf$"))
     app.add_handler(CallbackQueryHandler(join_game, pattern="^werewolf:join$"))
     app.add_handler(CallbackQueryHandler(view_word, pattern="^werewolf:view$"))
