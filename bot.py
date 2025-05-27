@@ -80,19 +80,6 @@ async def handle_restart(update: Update, context: ContextTypes.DEFAULT_TYPE):
         group_data[chat_id] = {"min": 1, "max": 100, "bomb": random.randint(1, 100)}
         await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_Bomb2, caption="💥 数字扫雷开始！范围：1–100，直接发送数字猜测！")
 
-    elif mode == "wheel":
-        group_data[chat_id] = {"players": [], "state": "waiting"}
-        await context.bot.send_photo(chat_id=chat_id, photo=START_IMAGE_JiuGui, caption="🍻酒鬼轮盘开始了！🕒倒计时20秒\n\n点击「🍺 我要参加」一起玩！",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🍺 我要参加", callback_data="join:wheel")]
-            ])
-        )
-        context.application.job_queue.run_once(
-            start_wheel_game,
-            when=20,
-            data={'chat_id': chat_id}
-        )
-
 
 async def handle_main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -141,35 +128,7 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await context.bot.send_message(chat_id=chat_id, text=f"{query.from_user.first_name} 选择了数字：{number}")
 
-async def handle_wenchi_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    chat_id = query.message.chat.id
-    guess = int(query.data.split(":")[1])
-    bad = group_data.get(chat_id, {}).get("bad")
-    
-    if chat_id not in group_data:
-        group_data[chat_id] = {"selected": set()}
-    if "selected" not in group_data[chat_id]:
-        group_data[chat_id]["selected"] = set()
-    if guess in group_data[chat_id]["selected"]:
-        await query.answer("这个食物已经被选过了~", show_alert=True)
-        return
-    group_data[chat_id]["selected"].add(guess)
 
-    if isinstance(bad, int) and guess == bad:
-        await context.bot.send_photo(
-            chat_id=chat_id,
-            photo=WENCHI_BOMB_IMAGE,
-            caption=f"Oh no！WenChi吃坏肚子了！他选择的是「{food_options[guess-1]}」",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔁 重新开始", callback_data="restart")],
-                [InlineKeyboardButton("🎮 切换游戏模式", callback_data="mainmenu")]
-            ])
-        )
-        group_data.pop(chat_id, None)
-    else:
-        await context.bot.send_message(chat_id=chat_id, text=f"{food_options[guess - 1]} 很安全😋")
 
 async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
