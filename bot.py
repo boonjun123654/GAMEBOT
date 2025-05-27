@@ -124,8 +124,7 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
             caption=f"💣 Boom！{user.first_name} 猜中炸弹，请接受惩罚！",
             reply_markup=get_punishment_buttons()
         )
-    group_data.pop(chat_id, None)
-
+        group_data.pop(chat_id, None)
     else:
         await context.bot.send_message(chat_id=chat_id, text=f"{query.from_user.first_name} 选择了数字：{number}")
 
