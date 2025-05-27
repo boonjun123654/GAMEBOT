@@ -105,6 +105,7 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     chat_id = query.message.chat.id
+    user = query.from_user
     number = int(query.data.split(":")[1])
     data = group_data.get(chat_id)
     if not data or "bombs" not in data:
