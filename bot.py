@@ -20,8 +20,7 @@ group_data = {}     # 每个群当前游戏状态（炸弹数、扫雷状态、W
 MAIN_MENU_IMAGE = "https://i.imgur.com/ImNHwGk.jpeg"
 START_IMAGE_Bomb = "https://i.imgur.com/wcRbnSG.jpeg"
 START_IMAGE_Bomb2 = "https://i.imgur.com/HdFmGiv.jpeg"
-START_IMAGE_JiuGui = "https://i.imgur.com/UG3dt2v.jpeg"
-BOMB_IMAGE = "https://i.imgur.com/ylIksPo.jpeg"
+BOMB_IMAGE = "https://i.imgur.com/UZ1RDaQ.jpeg"
 
 
 def get_bomb_keyboard():
@@ -130,17 +129,15 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     
     data["selected"].add(number)
-    if number in data["bombs"]:
+    if num in bombs:
         await context.bot.send_photo(
             chat_id=chat_id,
-            photo=BOMB_IMAGE,
-            caption=f"💣Boom！{query.from_user.first_name} 踩中炸弹！",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔁 重新开始", callback_data="restart")],
-                [InlineKeyboardButton("🎮 切换游戏模式", callback_data="mainmenu")]
-            ])
+            photo=BOMB_IMAGE,  # 你已有的爆炸图
+            caption=f"💣 Boom！{user.first_name} 猜中炸弹，请接受惩罚！",
+            reply_markup=get_punishment_buttons()
         )
-        group_data.pop(chat_id, None)
+    group_data.pop(chat_id, None)
+
     else:
         await context.bot.send_message(chat_id=chat_id, text=f"{query.from_user.first_name} 选择了数字：{number}")
 
@@ -189,19 +186,27 @@ async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYP
         await context.bot.send_photo(
             chat_id=chat_id,
             photo=BOMB_IMAGE,
-            caption=f"💥 Boom！{update.effective_user.first_name} 猜中了炸弹！",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔁 重新开始", callback_data="restart")],
-                [InlineKeyboardButton("🎮 切换游戏模式", callback_data="mainmenu")]
-            ])
+            caption=f"💣 Boom！{user.first_name} 猜中炸弹（{bomb}），请接受惩罚！",
+            reply_markup=get_punishment_buttons()
         )
         group_data.pop(chat_id, None)
+
     elif guess < data["bomb"]:
         data["min"] = max(data["min"], guess + 1)
         await context.bot.send_message(chat_id=chat_id, text=f"太小了！当前范围：{data['min']} - {data['max']}")
     else:
         data["max"] = min(data["max"], guess - 1)
         await context.bot.send_message(chat_id=chat_id, text=f"太大了！当前范围：{data['min']} - {data['max']}")
+
+def get_punishment_buttons():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🎯 进入惩罚轮盘", url="https://your-punish-web-link.com")],
+        [
+            InlineKeyboardButton("🔁 重新开始", callback_data="restart"),
+            InlineKeyboardButton("🎮 切换游戏模式", callback_data="main")
+        ]
+    ])
+
 
 
 if __name__ == "__main__":
