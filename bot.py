@@ -142,6 +142,7 @@ async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYP
     if not data:
         return
     if guess == data["bomb"]:
+        user = update.effective_user
         await context.bot.send_photo(
             chat_id=chat_id,
             photo=BOMB_IMAGE,
