@@ -167,7 +167,7 @@ def get_punishment_buttons():
         [InlineKeyboardButton("🎯 进入惩罚轮盘", url="https://boonjun123654.github.io/punishment-task")],
         [
             InlineKeyboardButton("🔁 重新开始", callback_data="restart"),
-            InlineKeyboardButton("🎮 切换游戏模式", callback_data="mainmenu")
+            InlineKeyboardButton("🎮 切换游戏", callback_data="mainmenu")
         ]
     ])
 
