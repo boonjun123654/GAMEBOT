@@ -141,12 +141,12 @@ async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYP
     data = group_data.get(chat_id)
     if not data:
         return
+    user = update.effective_user
     if guess == data["bomb"]:
-        user = update.effective_user
         await context.bot.send_photo(
             chat_id=chat_id,
             photo=BOMB_IMAGE,
-            caption=f"💣 Boom！{user.first_name} 猜中炸弹（{bomb}），请接受惩罚！",
+            caption=f"💣 Boom! {user.first_name} 猜中炸弹（{data['bomb']}），请接受惩罚！",
             reply_markup=get_punishment_buttons()
         )
         group_data.pop(chat_id, None)
