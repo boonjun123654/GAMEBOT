@@ -116,19 +116,23 @@ async def handle_guess(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     
+    bombs = data["bombs"]  # ⬅️ 添加
+    if number in data["selected"]:
+        await query.answer("这个数字已经被选过了！", show_alert=True)
+        return
+
     data["selected"].add(number)
-    if num in bombs:
+
+    if number in bombs:  # ⬅️ 用 number 判断
         await context.bot.send_photo(
             chat_id=chat_id,
-            photo=BOMB_IMAGE,  # 你已有的爆炸图
+            photo=BOMB_IMAGE,
             caption=f"💣 Boom！{user.first_name} 猜中炸弹，请接受惩罚！",
             reply_markup=get_punishment_buttons()
         )
         group_data.pop(chat_id, None)
     else:
-        await context.bot.send_message(chat_id=chat_id, text=f"{query.from_user.first_name} 选择了数字：{number}")
-
-
+        await context.bot.send_message(chat_id=chat_id, text=f"{user.first_name} 选择了数字：{number}")
 
 async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
