@@ -160,7 +160,7 @@ async def handle_sweeper_input(update: Update, context: ContextTypes.DEFAULT_TYP
 
 def get_punishment_buttons():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🎯 进入惩罚轮盘", url="https://your-punish-web-link.com")],
+        [InlineKeyboardButton("🎯 进入惩罚轮盘", url="https://boonjun123654.github.io/punishment-task")],
         [
             InlineKeyboardButton("🔁 重新开始", callback_data="restart"),
             InlineKeyboardButton("🎮 切换游戏模式", callback_data="main")
