@@ -3,6 +3,7 @@ import random
 import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CallbackQueryHandler, MessageHandler, filters
+from guess_song import handle_guess_song_callback
 from werewolf import (
     set_mode,
     join_game,
@@ -38,6 +39,7 @@ async def send_main_menu(chat_id, context):
         [InlineKeyboardButton("💣 数字炸弹", callback_data="mode:bomb")],
         [InlineKeyboardButton("💥 数字扫雷", callback_data="mode:sweeper")],
         [InlineKeyboardButton("🕵️‍♂️ 谁是卧底", callback_data="game_werewolf")]
+        [InlineKeyboardButton("🎤 谁是猜歌王", callback_data="game_guess_song")]
 ]
     await context.bot.send_photo(
         chat_id=chat_id,
@@ -171,6 +173,8 @@ def get_punishment_buttons():
         ]
     ])
 
+elif query.data.startswith("guess_song") or query.data == "game_guess_song":
+    await handle_guess_song_callback(query, context)
 
 
 if __name__ == "__main__":
@@ -192,6 +196,8 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_vote, pattern="^werewolf:vote:"))
     app.add_handler(CallbackQueryHandler(handle_vote2, pattern="^werewolf:vote2:"))
     app.add_handler(CallbackQueryHandler(start_game_restart, pattern="^werewolf:restart$"))
+    app.add_handler(CallbackQueryHandler(handle_guess_song_callback, pattern="^guess_song|^game_guess_song$"))
+
     
 
     print("✅ 多模式游戏 Bot 正在运行")
