@@ -38,7 +38,7 @@ async def send_main_menu(chat_id, context):
     keyboard = [
         [InlineKeyboardButton("💣 数字炸弹", callback_data="mode:bomb")],
         [InlineKeyboardButton("💥 数字扫雷", callback_data="mode:sweeper")],
-        [InlineKeyboardButton("🕵️‍♂️ 谁是卧底", callback_data="game_werewolf")]
+        [InlineKeyboardButton("🕵️‍♂️ 谁是卧底", callback_data="game_werewolf")],
         [InlineKeyboardButton("🎤 谁是猜歌王", callback_data="game_guess_song")]
 ]
     await context.bot.send_photo(
