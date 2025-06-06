@@ -7,8 +7,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 # 加载歌曲库（统一一组，不分中文/粤语/福建）
 with open("song_library_900_unique.json", "r", encoding="utf-8") as f:
     raw_data = json.load(f)
-    SONG_LIST = raw_data["中文歌曲库"] + raw_data["粤语歌曲库"] + raw_data["福建歌曲库"]
-
+    SONG_LIST = raw_data
 # 猜歌王主逻辑
 async def handle_guess_song_callback(query, context):
     data = query.data
