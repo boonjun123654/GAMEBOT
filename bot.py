@@ -173,9 +173,6 @@ def get_punishment_buttons():
         ]
     ])
 
-elif query.data.startswith("guess_song") or query.data == "game_guess_song":
-    await handle_guess_song_callback(query, context)
-
 
 if __name__ == "__main__":
 
