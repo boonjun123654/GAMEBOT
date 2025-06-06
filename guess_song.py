@@ -9,7 +9,9 @@ with open("song_library_900_unique.json", "r", encoding="utf-8") as f:
     raw_data = json.load(f)
     SONG_LIST = raw_data
 # 猜歌王主逻辑
+
 async def handle_guess_song_callback(query, context):
+    await query.answer()  # ✅ 放这里 → 全部 query 点击都能消除 Loading
     data = query.data
 
     if data == "game_guess_song":
