@@ -193,9 +193,8 @@ if __name__ == "__main__":
     app.add_handler(CallbackQueryHandler(handle_vote, pattern="^werewolf:vote:"))
     app.add_handler(CallbackQueryHandler(handle_vote2, pattern="^werewolf:vote2:"))
     app.add_handler(CallbackQueryHandler(start_game_restart, pattern="^werewolf:restart$"))
-    app.add_handler(CallbackQueryHandler(handle_guess_song_callback, pattern="^guess_song|^game_guess_song$"))
+    app.add_handler(CallbackQueryHandler(handle_guess_song_callback, pattern="^(game_guess_song|guess_song_start|guess_song_success|guess_song_fail)$"))
 
     
-
     print("✅ 多模式游戏 Bot 正在运行")
     app.run_polling()
